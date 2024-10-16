@@ -21,7 +21,10 @@ Communication: Real-time data communication with the rocket
 **Installation**
 
 1. Clone this repository:
+
+```bash
 git clone https://github.com/yourusername/likwidator-ground-control.git
+```
 2. Open the project in Visual Studio or another C# IDE.
 3. Build the solution and run the application.
 
