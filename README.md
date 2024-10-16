@@ -3,7 +3,7 @@ This is repository for ground control system and data representation for Likwida
 
 **Likwidator Rocket - Ground Control System**
 
-This repository contains the source code for the Ground Control System (GCS) of the Likwidator Rocket project. The GCS is responsible for receiving, displaying, and saving real-time data from the rocket during flight. It also includes a mission abort system, which can trigger the emergency parachutes if the flight poses a threat.
+This repository contains the source code for the Ground Control System (GCS) of the Likwidator Rocket project. The GCS is responsible for receiving, displaying, and saving real-time data from the rocket during flight.
 
 **Features**
 
@@ -32,8 +32,7 @@ git clone https://github.com/yourusername/likwidator-ground-control.git
 
 Launch the application from the GUI.
 Connect the ground control system to the rocket via the specified communication protocol.
-Monitor the real-time data and take action if necessary, using the Mission Abort System in case of emergency.
-
+Monitor the real-time data.
 **Contributing**
 
 We welcome contributions! Feel free to open an issue or submit a pull request.
