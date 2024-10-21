@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 
 namespace LikwidatorBackend
 {
-    /// <summary>
-    /// A class for handling data storage and retrieval in CSV format.
-    /// </summary>
     public class DataHandler
     {
         private string _filePath;
@@ -15,12 +13,11 @@ namespace LikwidatorBackend
         {
             _filePath = filePath;
 
-            // Create file if it does not exist
+            // If the file doesn't exist, create it with the headers
             if (!File.Exists(_filePath))
             {
-                using (var writer = new StreamWriter(_filePath, true))
+                using (var writer = new StreamWriter(_filePath, false))
                 {
-                    // Write header
                     writer.WriteLine("GyroX,GyroY,GyroZ,VerVel,VelAcc,Pitch,Roll,Heading,Altitude,Latitude,Longitude,SpeedOverGround,CourseOverGround");
                 }
             }
@@ -30,54 +27,49 @@ namespace LikwidatorBackend
         /// Saves the telemetry data to a CSV file.
         /// </summary>
         /// <param name="data">The telemetry data to save.</param>
-        public void SaveTelemetryData(TelemetryData data)
+        public void SaveData(TelemetryData data)
         {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-
             using (var writer = new StreamWriter(_filePath, true))
             {
-                writer.WriteLine($"{data.GyroX},{data.GyroY},{data.GyroZ},{data.VerVel},{data.VelAcc}," +
-                                 $"{data.Pitch},{data.Roll},{data.Heading},{data.Altitude}," +
-                                 $"{data.Latitude},{data.Longitude},{data.SpeedOverGround},{data.CourseOverGround}");
+                writer.WriteLine($"{data.GyroX},{data.GyroY},{data.GyroZ},{data.VerVel},{data.VelAcc},{data.Pitch},{data.Roll},{data.Heading},{data.Altitude},{data.Latitude},{data.Longitude},{data.SpeedOverGround},{data.CourseOverGround}");
             }
         }
 
         /// <summary>
-        /// Retrieves all telemetry data from the CSV file.
+        /// Loads all telemetry data from the CSV file.
         /// </summary>
-        /// <returns>A list of telemetry data.</returns>
-        public List<TelemetryData> RetrieveTelemetryData()
+        /// <returns>A list of TelemetryData objects.</returns>
+        public List<TelemetryData> LoadData()
         {
             var telemetryDataList = new List<TelemetryData>();
 
             using (var reader = new StreamReader(_filePath))
             {
-                // Skip the header line
-                reader.ReadLine();
+                string headerLine = reader.ReadLine(); // Skip header line
 
                 while (!reader.EndOfStream)
                 {
                     var line = reader.ReadLine();
                     var values = line.Split(',');
 
-                    var telemetryData = new TelemetryData
+                    var data = new TelemetryData
                     {
-                        GyroX = float.Parse(values[0]),
-                        GyroY = float.Parse(values[1]),
-                        GyroZ = float.Parse(values[2]),
-                        VerVel = float.Parse(values[3]),
-                        VelAcc = float.Parse(values[4]),
-                        Pitch = float.Parse(values[5]),
-                        Roll = float.Parse(values[6]),
-                        Heading = float.Parse(values[7]),
-                        Altitude = float.Parse(values[8]),
+                        GyroX = float.Parse(values[0], CultureInfo.InvariantCulture),
+                        GyroY = float.Parse(values[1], CultureInfo.InvariantCulture),
+                        GyroZ = float.Parse(values[2], CultureInfo.InvariantCulture),
+                        VerVel = float.Parse(values[3], CultureInfo.InvariantCulture),
+                        VelAcc = float.Parse(values[4], CultureInfo.InvariantCulture),
+                        Pitch = float.Parse(values[5], CultureInfo.InvariantCulture),
+                        Roll = float.Parse(values[6], CultureInfo.InvariantCulture),
+                        Heading = float.Parse(values[7], CultureInfo.InvariantCulture),
+                        Altitude = float.Parse(values[8], CultureInfo.InvariantCulture),
                         Latitude = values[9],
                         Longitude = values[10],
-                        SpeedOverGround = float.Parse(values[11]),
+                        SpeedOverGround = float.Parse(values[11], CultureInfo.InvariantCulture),
+                        CourseOverGround = float.Parse(values[12], CultureInfo.InvariantCulture)
                     };
-                        CourseOverGround = float.Parse(values[12])
 
-                    telemetryDataList.Add(telemetryData);
+                    telemetryDataList.Add(data);
                 }
             }
 
