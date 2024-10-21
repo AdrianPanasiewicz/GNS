@@ -194,3 +194,4 @@ namespace LikwidatorBackend
             usbConnection.CloseConnection();
         }
     }
+}

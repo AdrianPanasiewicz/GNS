@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using LikwidatorBackend;
 using LiveCharts;
 using LiveCharts.Defaults;
 using LiveCharts.Wpf;
@@ -19,14 +19,16 @@ namespace TestingCharts
     public partial class Form1 : Form
     {
         private Image rocketImage; // tutaj będziemy przechowywać obraz rakiety
-        private float pitch = -3;   // początkowa wartość pitch
+        private float pitch = 0;   // początkowa wartość pitch
         private float roll = 0;    // początkowa wartość roll
         private float heading = 0; // początkowa wartość heading
+
+        private USBConnection usbConnection;
 
         // Dodaj panel do rysowania
         private Panel drawingPanel;
 
-        public Form1()
+        public Form1(USBConnection usbConn)
         {
             InitializeComponent();
             this.Paint += new PaintEventHandler(Form1_Paint);
@@ -34,9 +36,27 @@ namespace TestingCharts
             this.Size = new Size(1920, 1080);
             this.BackColor = Color.FromArgb(255, 20, 33, 61);
             rocketImage = Image.FromFile("C:\\Users\\adria\\source\\repos\\GNS-Lik\\RocketPhoto\\Rakieta.png");
-            
 
-            
+            this.usbConnection = usbConn;
+
+            // Subscribe to data processed event
+            usbConnection.OnDataProcessed += (TelemetryData data) =>
+            {
+                if (data != null)
+                {
+                    // Update the charts with the received telemetry data
+                    UpdateCharts(data);
+
+                    // Update the rocket image rotation
+                    pitch = data.Pitch;
+                    roll = data.Roll;
+                    heading = data.Heading;
+
+                    // Trigger repaint for rocket rotation
+                    this.Invalidate();
+                }
+            };
+
             Panel panel = new Panel
             {
                 Size = new Size(640, 980),
@@ -617,16 +637,7 @@ namespace TestingCharts
                     Values = new ChartValues<ObservablePoint>
                     {
                         new ObservablePoint(0,0),
-                        new ObservablePoint(1,1),
-                        new ObservablePoint(2,2),
-                        new ObservablePoint(3,3),
-                        new ObservablePoint(4,4),
-                        new ObservablePoint(5,5),
-                        new ObservablePoint(6,6),
-                        new ObservablePoint(7,7),
-                        new ObservablePoint(8,8),
-                        new ObservablePoint(9,9),
-                        new ObservablePoint(10,20)
+
                     },
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red),
@@ -639,11 +650,8 @@ namespace TestingCharts
                 {
                     Values = new ChartValues<ObservablePoint>
                     {
-                        new ObservablePoint(0,10),
-                        new ObservablePoint(4,7),
-                        new ObservablePoint(5,3),
-                        new ObservablePoint(7,6),
-                        new ObservablePoint(10,8)
+                        new ObservablePoint(0,0),
+
                     },
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Blue),
@@ -656,11 +664,8 @@ namespace TestingCharts
                 {
                     Values = new ChartValues<ObservablePoint>
                     {
-                        new ObservablePoint(0,10),
-                        new ObservablePoint(3,7),
-                        new ObservablePoint(5,2),
-                        new ObservablePoint(7,6),
-                        new ObservablePoint(15,9)
+                        new ObservablePoint(0,0),
+
                     },
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Green),
@@ -674,16 +679,6 @@ namespace TestingCharts
                     Values = new ChartValues<ObservablePoint>
                     {
                         new ObservablePoint(0,0),
-                        new ObservablePoint(1,2),
-                        new ObservablePoint(2,4),
-                        new ObservablePoint(3,8),
-                        new ObservablePoint(4,16),
-                        new ObservablePoint(5,32),
-                        new ObservablePoint(6,64),
-                        new ObservablePoint(7,128),
-                        new ObservablePoint(8,256),
-                        new ObservablePoint(9,512),
-                        new ObservablePoint(10,1028)
                     },
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Yellow),
@@ -697,16 +692,7 @@ namespace TestingCharts
                     Values = new ChartValues<ObservablePoint>
                     {
                         new ObservablePoint(0,0),
-                        new ObservablePoint(1,2),
-                        new ObservablePoint(2,6),
-                        new ObservablePoint(3,10),
-                        new ObservablePoint(4,30),
-                        new ObservablePoint(5,70),
-                        new ObservablePoint(6,90),
-                        new ObservablePoint(7,110),
-                        new ObservablePoint(8,180),
-                        new ObservablePoint(9,200),
-                        new ObservablePoint(10,180)
+
                     },
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Orange),
@@ -740,7 +726,34 @@ namespace TestingCharts
             */
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+
+    // Method to update all charts with new telemetry data
+    private void UpdateCharts(TelemetryData data)
+    {
+        // Update cartesianChart1 with GyroX
+        cartesianChart1.Series[0].Values.Add(new ObservablePoint(DateTime.Now.Ticks, data.GyroX));
+        cartesianChart1.Refresh();
+
+        // Update cartesianChart2 with GyroY
+        cartesianChart2.Series[0].Values.Add(new ObservablePoint(DateTime.Now.Ticks, data.GyroY));
+        cartesianChart2.Refresh();
+
+        // Update cartesianChart3 with GyroZ
+        cartesianChart3.Series[0].Values.Add(new ObservablePoint(DateTime.Now.Ticks, data.GyroZ));
+        cartesianChart3.Refresh();
+
+        // Update cartesianChart4 with Altitude
+        cartesianChart4.Series[0].Values.Add(new ObservablePoint(DateTime.Now.Ticks, data.Altitude));
+        cartesianChart4.Refresh();
+
+        // Update cartesianChart5 with Velocity (or any other telemetry value you want to display)
+        cartesianChart5.Series[0].Values.Add(new ObservablePoint(DateTime.Now.Ticks, data.VerVel));
+        cartesianChart5.Refresh();
+    }
+
+
+
+    private void Form1_Load(object sender, EventArgs e)
         {
 
         }
