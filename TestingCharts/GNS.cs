@@ -727,6 +727,7 @@ namespace TestingCharts
         }
 
 
+
     // Method to update all charts with new telemetry data
     private void UpdateCharts(TelemetryData data)
     {
@@ -800,7 +801,7 @@ namespace TestingCharts
                 g.RotateTransform(heading);
 
                 // Rysowanie rakiety
-                //g.DrawImage(rocketImage, -rocketImage.Width / 2, -rocketImage.Height / 2);
+                g.DrawImage(rocketImage, -rocketImage.Width / 2, -rocketImage.Height / 2);
 
                 if (rocketImage != null)
                 {   
