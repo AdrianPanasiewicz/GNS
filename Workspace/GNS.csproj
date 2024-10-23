@@ -62,17 +62,17 @@
   <ItemGroup>
     <Compile Include="Back-end\DataHandler.cs" />
     <Compile Include="Back-end\MockUSBConnection.cs" />
-    <Compile Include="GNS.cs">
+    <Compile Include="Front-end\GNS.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GNS.Designer.cs">
+    <Compile Include="Front-end\GNS.Designer.cs">
       <DependentUpon>GNS.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Back-end\TelemetryData.cs" />
     <Compile Include="Back-end\USBConnection.cs" />
-    <EmbeddedResource Include="GNS.resx">
+    <EmbeddedResource Include="Front-end\GNS.resx">
       <DependentUpon>GNS.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -84,7 +84,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <None Include="packages.config" />
+    <None Include="Front-end\packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -96,7 +96,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="Front-end\App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\Rakieta.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Dane\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
