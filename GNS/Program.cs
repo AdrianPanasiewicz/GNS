@@ -1,4 +1,5 @@
 ﻿using GroundControlSystem.Communication;
+using GroundControlSystem.TelemetryProcessing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,14 @@ namespace GNS
         [STAThread]
         static void Main()
         {
-            // Ustaw na true, aby używać symulowanego połączenia, false dla rzeczywistego
-            USBManager manager = new USBManager(useSimulation: true);
+            string saveFilePath = "telemetry_data.csv";
+            TelemetryProcessor processor = new TelemetryProcessor(saveFilePath);
 
-            manager.StartReceivingData();
+            // Ustaw flagę true, aby użyć symulacji, false dla rzeczywistego USB
+            bool useSimulation = true;
+
+            USBManager usbManager = new USBManager(useSimulation);
+            usbManager.StartReceivingData(); // To wypisze dane w konsoli
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

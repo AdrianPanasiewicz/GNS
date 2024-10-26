@@ -129,6 +129,13 @@
     <Compile Include="Back-end\Communication\USBManager.cs" />
     <Compile Include="Back-end\Communication\USBReceiver.cs" />
     <Compile Include="Back-end\Communication\IUSBReceiver.cs" />
+    <Compile Include="Back-end\DataModels\BaroData.cs" />
+    <Compile Include="Back-end\DataModels\GPSData.cs" />
+    <Compile Include="Back-end\DataModels\IMUData.cs" />
+    <Compile Include="Back-end\DataModels\TelemetryPacket.cs" />
+    <Compile Include="Back-end\DataModels\TSSData.cs" />
+    <Compile Include="Back-end\DataModels\TVSData.cs" />
+    <Compile Include="Back-end\TelemetryProcessing\TelemetryProcessor.cs" />
     <Compile Include="GNS.cs">
       <SubType>Form</SubType>
     </Compile>
