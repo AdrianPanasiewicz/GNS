@@ -1,6 +1,11 @@
-﻿using GroundControlSystem.DataModels;
+﻿using CsvHelper;
+using CsvHelper.Configuration;
+using GroundControlSystem.DataModels;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Windows.Documents;
 
 namespace GroundControlSystem.TelemetryProcessing
 {
@@ -85,15 +90,40 @@ namespace GroundControlSystem.TelemetryProcessing
         /// <param name="packet">Pakiet telemetryczny do zapisania.</param>
         public void SaveToCSV(TelemetryPacket packet)
         {
+            var records = new List<TelemetryPacket>
+            {
+                packet,
+            };
+
             string csvLine = packet.ToCSV();
 
             try
             {
-                // Append data to the CSV file
-                using (StreamWriter sw = new StreamWriter(_saveFilePath, true))
+                if (!File.Exists(_saveFilePath))
                 {
-                    sw.WriteLine(csvLine);
+                    using (File.Create(_saveFilePath)) { }
+
+                    var WhileCreatingConfigPersons = new CsvConfiguration(CultureInfo.InvariantCulture)
+                    { HasHeaderRecord = true };
+
+                    using (StreamWriter streamWriter = new StreamWriter(_saveFilePath))
+                    using (CsvWriter csvWriter = new CsvWriter(streamWriter, WhileCreatingConfigPersons))
+                    {
+                        csvWriter.WriteRecords(records);
+                    }
                 }
+
+                var configPersons = new CsvConfiguration(CultureInfo.InvariantCulture)
+                {  HasHeaderRecord = false };
+
+                using (StreamWriter streamWriter = new StreamWriter(_saveFilePath, true))
+                using (CsvWriter csvWriter = new CsvWriter(streamWriter, configPersons))
+                {
+                    csvWriter.WriteRecords(records);
+                }
+
+                Console.WriteLine("Data written to CSV successfully.");
+
             }
             catch (Exception ex)
             {

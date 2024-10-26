@@ -3,7 +3,9 @@ using GroundControlSystem.DataModels;
 using GroundControlSystem.TelemetryProcessing;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -18,7 +20,13 @@ namespace GNS
         [STAThread]
         static void Main()
         {
-            string saveFilePath = "telemetry_data.csv";
+            // Znajdz sciezke do przestrzeni roboczej
+            string workingDirectory = Environment.CurrentDirectory;
+            string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
+
+            string saveFilePath = projectDirectory + "\\GNS\\Data\\telemetry_data.csv";
+
+
             TelemetryProcessor processor = new TelemetryProcessor(saveFilePath);
 
             // Ustaw flagę true, aby użyć symulacji, false dla rzeczywistego USB
