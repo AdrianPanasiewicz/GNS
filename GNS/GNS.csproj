@@ -73,6 +73,9 @@
     <Reference Include="HelixToolkit.Wpf, Version=2.25.0.0, Culture=neutral, PublicKeyToken=52aa3500039caf0d, processorArchitecture=MSIL">
       <HintPath>..\packages\HelixToolkit.Wpf.2.25.0\lib\net462\HelixToolkit.Wpf.dll</HintPath>
     </Reference>
+    <Reference Include="LibUsbDotNet.LibUsbDotNet, Version=2.2.0.0, Culture=neutral, PublicKeyToken=c677239abe1e02a9, processorArchitecture=MSIL">
+      <HintPath>..\packages\LibUsbDotNet.2.2.29\lib\net45\LibUsbDotNet.LibUsbDotNet.dll</HintPath>
+    </Reference>
     <Reference Include="LiveCharts, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
       <HintPath>..\packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll</HintPath>
     </Reference>
@@ -122,10 +125,10 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Back-end\DataHandler.cs" />
-    <Compile Include="Back-end\MockUSBConnection.cs" />
-    <Compile Include="Back-end\TelemetryData.cs" />
-    <Compile Include="Back-end\USBConnection.cs" />
+    <Compile Include="Back-end\Communication\SimulatedUSBReceiver.cs" />
+    <Compile Include="Back-end\Communication\USBManager.cs" />
+    <Compile Include="Back-end\Communication\USBReceiver.cs" />
+    <Compile Include="Back-end\Communication\IUSBReceiver.cs" />
     <Compile Include="GNS.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -150,6 +153,7 @@
     <None Include="Front-end\app.manifest" />
     <None Include="Front-end\OpenTK.dll.config" />
     <None Include="Front-end\packages.config" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -159,14 +163,15 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="Resources\RocketPhoto\12216_rocket_v1_l2.obj" />
-    <None Include="Resources\RocketPhoto\12217_rocket_v1_l1.obj" />
+    <None Include="bin\Debug\RocketPhoto\12216_rocket_v1_l2.obj" />
+    <None Include="bin\Debug\RocketPhoto\12217_rocket_v1_l1.obj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Front-end\App.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Data\" />
+    <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
@@ -181,7 +186,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\RocketPhoto\Rakieta.png" />
+    <Content Include="bin\Debug\RocketPhoto\Rakieta.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

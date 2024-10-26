@@ -721,7 +721,7 @@ namespace GNS
 
         private void GNS_Load(object sender, EventArgs e)
         {
-            LoadRocketModel("RocketPhoto/12217_rocket_v1_l1.obj");
+            LoadRocketModel("Resources\\RocketPhoto\\12217_rocket_v1_l1.obj");
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -764,7 +764,7 @@ namespace GNS
             var importer = new ModelImporter();
             Model3D model = importer.Load(modelPath);
 
-            var whiteMaterial = new DiffuseMaterial(new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 200, 200, 200)));
+            var whiteMaterial = new DiffuseMaterial(new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 255, 255, 255)));
 
             if (model is Model3DGroup modelGroup)
             {
