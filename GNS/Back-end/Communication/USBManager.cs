@@ -7,7 +7,7 @@ namespace GroundControlSystem.Communication
     /// </summary>
     public class USBManager
     {
-        private IUSBReceiver _usbReceiver;
+        public IUSBReceiver usbReceiver;
 
         /// <summary>
         /// Tworzy instancję menedżera USB. 
@@ -18,11 +18,11 @@ namespace GroundControlSystem.Communication
         {
             if (useSimulation)
             {
-                _usbReceiver = new SimulatedUSBReceiver();
+                usbReceiver = new SimulatedUSBReceiver();
             }
             else
             {
-                _usbReceiver = new USBReceiver();
+                usbReceiver = new USBReceiver();
             }
         }
 
@@ -31,10 +31,10 @@ namespace GroundControlSystem.Communication
         /// </summary>
         public void StartReceivingData()
         {
-            _usbReceiver.InitializeConnection();
-            var data = _usbReceiver.ReceiveData();
+            usbReceiver.InitializeConnection();
+            var data = usbReceiver.ReceiveData();
             Console.WriteLine($"Odebrano dane: {BitConverter.ToString(data)}");
-            _usbReceiver.CloseConnection();
+            usbReceiver.CloseConnection();
         }
     }
 }

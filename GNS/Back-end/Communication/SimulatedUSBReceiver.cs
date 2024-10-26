@@ -26,7 +26,7 @@ namespace GroundControlSystem.Communication
             if (!_isConnected) throw new InvalidOperationException("Brak symulowanego połączenia USB.");
 
             Random rand = new Random();
-            byte[] simulatedData = new byte[64];
+            byte[] simulatedData = new byte[152];
 
             for (int i = 0; i < simulatedData.Length; i++)
             {

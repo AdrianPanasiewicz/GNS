@@ -1,8 +1,10 @@
 ﻿using GroundControlSystem.Communication;
+using GroundControlSystem.DataModels;
 using GroundControlSystem.TelemetryProcessing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -23,11 +25,33 @@ namespace GNS
             bool useSimulation = true;
 
             USBManager usbManager = new USBManager(useSimulation);
-            usbManager.StartReceivingData(); // To wypisze dane w konsoli
 
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new GNS());
+            // 1. Inicjalizuj połączenie USB i odbierz dane
+            usbManager.usbReceiver.InitializeConnection();
+            Console.WriteLine("Rozpoczynanie odbioru danych z USB...");
+
+            while (true)
+            {
+                // 2. Przetwórz dane do obiektu telemetrycznego
+                byte[] rawData = usbManager.usbReceiver.ReceiveData();
+                TelemetryPacket telemetryPacket = processor.ProcessRawData(rawData);
+
+                // 3. Zapisz dane do CSV
+                processor.SaveToCSV(telemetryPacket);
+
+                // 4. Wyświetl dane telemetryczne w konsoli
+                Console.WriteLine("Dane telemetryczne:");
+                Console.WriteLine(telemetryPacket.ToCSV());
+
+                Thread.Sleep(500);
+            }
+
+            ////5. Zamknij polaczenie
+            //usbManager.usbReceiver.CloseConnection();
+
+            //Application.EnableVisualStyles();
+            //Application.SetCompatibleTextRenderingDefault(false);
+            //Application.Run(new GNS());
         }
     }
 }
