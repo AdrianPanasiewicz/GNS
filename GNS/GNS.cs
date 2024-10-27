@@ -29,16 +29,14 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Graphics;
 using OpenTK.Input;
 using System.IO;
-//using System.Windows.Media;
-
 
 namespace GNS
 {
     public partial class GNS : Form
     {
-        private float pitch = 0;   // początkowa wartość pitch
-        private float roll = 0;    // początkowa wartość roll
-        private float heading = 0; // początkowa wartość heading
+        private float pitch = 10;   // początkowa wartość pitch
+        private float roll = 30;    // początkowa wartość roll
+        private float heading = 5; // początkowa wartość heading
 
         private GameWindow gameWindow;
 
@@ -721,7 +719,7 @@ namespace GNS
 
         private void GNS_Load(object sender, EventArgs e)
         {
-            LoadRocketModel("Resources\\RocketPhoto\\12217_rocket_v1_l1.obj");
+            LoadRocketModel("RocketPhoto/12217_rocket_v1_l1.obj");
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -749,10 +747,9 @@ namespace GNS
 
         }
 
-
         private void LoadRocketModel(string path)
         {
-
+            // Ścieżka do pliku modelu .obj
             string modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RocketPhoto", "12217_rocket_v1_l1.obj");
 
             if (!File.Exists(modelPath))
@@ -762,36 +759,17 @@ namespace GNS
             }
 
             var importer = new ModelImporter();
-            Model3D model = importer.Load(modelPath);
+            Model3D model = importer.Load(modelPath); // ModelImporter automatycznie załaduje plik .mtl, jeśli jest w tej samej lokalizacji i .obj na niego wskazuje
 
-            var whiteMaterial = new DiffuseMaterial(new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 255, 255, 255)));
-
-            if (model is Model3DGroup modelGroup)
-            {
-                foreach (var child in modelGroup.Children)
-                {
-                    if (child is GeometryModel3D geometryModel)
-                    {
-                        geometryModel.Material = null;
-                        geometryModel.Material = whiteMaterial;
-                    }
-                }
-            }
-            else if (model is GeometryModel3D geometryModel)
-            {
-                geometryModel.Material = null;
-                geometryModel.Material = whiteMaterial;
-            }
-
-            // Dodaj model do widoku
-            var modelVisual3D = new ModelVisual3D();
-            modelVisual3D.Content = model;
+            // Utwórz model 3D do wyświetlenia
+            var modelVisual3D = new ModelVisual3D { Content = model };
 
             // Skonfiguruj grupę transformacji
             var transformGroup = new Transform3DGroup();
-            transformGroup.Children.Add(new ScaleTransform3D(0.0012, 0.0012, 0.0012)); // Skalowanie
+            transformGroup.Children.Add(new ScaleTransform3D(0.0012, 0.0012, 0.0012)); // Skalowanie modelu
             modelVisual3D.Transform = transformGroup;
 
+            // Dodaj model do widoku
             viewport.Children.Add(modelVisual3D);
 
             // Ustaw kamerę
