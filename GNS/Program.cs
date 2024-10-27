@@ -2,16 +2,9 @@
 using GroundControlSystem.DataModels;
 using GroundControlSystem.TelemetryProcessing;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Security.Cryptography.X509Certificates;
-using System.Diagnostics;
 
 namespace GNS
 {
@@ -37,14 +30,14 @@ namespace GNS
 
             USBManager usbManager = new USBManager(useSimulation);
 
-            // 1. Inicjalizuj połączenie USB i odbierz dane
+            // Inicjalizuj połączenie USB i odbierz dane
             usbManager.usbReceiver.InitializeConnection();
             Console.WriteLine("Rozpoczynanie odbioru danych z USB...");
 
 
             // Stworzenie watku do obslugi back-end
-            Thread MainThread = new Thread(() => BackEnd(processor, usbManager));
-            MainThread.Name = "Main thread";
+            Thread BackEndThread = new Thread(() => BackEnd(processor, usbManager));
+            BackEndThread.Name = "Main thread";
 
 
             // Stworzenie watku do obslugi GUI
@@ -53,8 +46,8 @@ namespace GNS
             GUIThread.Name = "GUI thread";
 
             // Uruchomienie obu watkow
-            MainThread.Start();
             GUIThread.Start();
+            BackEndThread.Start();
 
         }
 
@@ -69,8 +62,12 @@ namespace GNS
         {
             while (true)
             {
-                // 2. Przetwórz dane do obiektu telemetrycznego
+
+
+                // 1, Pobranie danych z USB
                 byte[] rawData = usbManager.usbReceiver.ReceiveData();
+
+                // 2. Przetwórz dane do obiektu telemetrycznego
                 TelemetryPacket telemetryPacket = processor.ProcessRawData(rawData);
 
                 // 3. Zapisz dane do CSV
@@ -94,6 +91,7 @@ namespace GNS
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new GNS());
+            Environment.Exit(0);
         }
     }
 
