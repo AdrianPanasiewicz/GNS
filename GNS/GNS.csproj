@@ -182,6 +182,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="Data\telemetry_data.csv" />
     <None Include="Front-end\app.manifest" />
     <None Include="Front-end\OpenTK.dll.config" />
     <None Include="Front-end\packages.config" />
@@ -203,7 +204,6 @@
     <None Include="Front-end\App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Data\" />
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
