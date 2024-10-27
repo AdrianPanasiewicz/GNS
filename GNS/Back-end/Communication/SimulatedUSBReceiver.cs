@@ -28,9 +28,14 @@ namespace GroundControlSystem.Communication
             Random rand = new Random();
             byte[] simulatedData = new byte[152];
 
-            for (int i = 0; i < simulatedData.Length; i++)
+            for (int i = 0; i < simulatedData.Length; i += 4)
             {
-                simulatedData[i] = (byte)rand.Next(0, 256);
+                // Generate random float values between 0 and 100
+                float randomValue = (float)(rand.NextDouble() * 100);
+
+                // Convert the float to bytes and insert it into the simulatedData array
+                byte[] floatBytes = BitConverter.GetBytes(randomValue);
+                Array.Copy(floatBytes, 0, simulatedData, i, 4);
             }
 
             Console.WriteLine("Symulowane dane odebrane.");

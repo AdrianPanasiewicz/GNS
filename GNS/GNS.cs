@@ -29,14 +29,17 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Graphics;
 using OpenTK.Input;
 using System.IO;
+using System.Collections.Concurrent;
+using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace GNS
 {
     public partial class GNS : Form
     {
-        private float pitch = 10;   // początkowa wartość pitch
-        private float roll = 30;    // początkowa wartość roll
-        private float heading = 5; // początkowa wartość heading
+        private float pitch = 0;   // początkowa wartość pitch
+        private float roll = 0;    // początkowa wartość roll
+        private float heading = 0; // początkowa wartość heading
 
         private GameWindow gameWindow;
 
@@ -45,6 +48,9 @@ namespace GNS
         private ElementHost host;
         private HelixViewport3D viewport;
 
+        private ConcurrentQueue<ObservablePoint> telemetryDataQueue;
+        private SeriesCollection seriesCollection;
+
         public GNS()
         {
             InitializeComponent();
@@ -52,7 +58,9 @@ namespace GNS
             this.Size = new Size(1920, 1080);
             this.BackColor = Color.FromArgb(255, 20, 33, 61);
             this.Load += new EventHandler(GNS_Load); // Dodanie zdarzenia Load
-            
+
+            telemetryDataQueue = new ConcurrentQueue<ObservablePoint>();
+
             host = new ElementHost();
             host.Size = new Size(622, 542);
             host.Location = new Point(4, 4);
@@ -585,24 +593,11 @@ namespace GNS
             });
 
 
-            cartesianChart1.Series = new SeriesCollection
+            cartesianChart1.Series = seriesCollection = new SeriesCollection
             {
                 new LineSeries
                 {
-                    Values = new ChartValues<ObservablePoint>
-                    {
-                        new ObservablePoint(0,0),
-                        new ObservablePoint(1,1),
-                        new ObservablePoint(2,2),
-                        new ObservablePoint(3,3),
-                        new ObservablePoint(4,4),
-                        new ObservablePoint(5,5),
-                        new ObservablePoint(6,6),
-                        new ObservablePoint(7,7),
-                        new ObservablePoint(8,8),
-                        new ObservablePoint(9,9),
-                        new ObservablePoint(10,20)
-                    },
+                    Values = new ChartValues<ObservablePoint>(),
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red),
                     Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 220, 20, 60))
@@ -614,11 +609,8 @@ namespace GNS
                 {
                     Values = new ChartValues<ObservablePoint>
                     {
-                        new ObservablePoint(0,10),
-                        new ObservablePoint(4,7),
-                        new ObservablePoint(5,3),
-                        new ObservablePoint(7,6),
-                        new ObservablePoint(10,8)
+                        new ObservablePoint(0,0)
+
                     },
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Blue),
@@ -631,11 +623,7 @@ namespace GNS
                 {
                     Values = new ChartValues<ObservablePoint>
                     {
-                        new ObservablePoint(0,10),
-                        new ObservablePoint(3,7),
-                        new ObservablePoint(5,2),
-                        new ObservablePoint(7,6),
-                        new ObservablePoint(15,9)
+                        new ObservablePoint(0,0)
                     },
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Green),
@@ -669,6 +657,11 @@ namespace GNS
                 MajorDistance = 5
             });
 
+            // Uruchomienie wątku do aktualizacji wykresu
+            Thread guiUpdateThread = new Thread(UpdateChartLoop);
+            guiUpdateThread.IsBackground = true;
+            guiUpdateThread.Start();
+
 
             var pointsCollection = new Point3DCollection();
 
@@ -694,7 +687,7 @@ namespace GNS
             // Dodajemy element hostujący do formularza
             panel5.Controls.Add(elementHost);
 
-            var timer = new Timer { Interval = 1000 }; // 1000ms = 1 sekunda
+            var timer = new System.Windows.Forms.Timer { Interval = 1000 }; // 1000ms = 1 sekunda
             int currentPointIndex = 0;
 
             // Timer tick event
@@ -818,6 +811,37 @@ namespace GNS
         private void label3_Click_1(object sender, EventArgs e)
         {
 
+        }
+
+        /// <summary>
+        /// Funkcja do regularnej aktualizacji wykresu
+        /// </summary>
+        private void UpdateChartLoop()
+        {
+            while (true)
+            {
+                if (telemetryDataQueue.TryDequeue(out ObservablePoint newPoint))
+                {
+                    // Zaktualizuj wykres w bezpieczny dla wątków sposób
+                    this.Invoke(new Action(() =>
+                    {
+                        seriesCollection[0].Values.Add(newPoint);
+                    }));
+                }
+
+                // Odśwież wykres co 500 ms
+                Thread.Sleep(500);
+            }
+        }
+
+        /// <summary>
+        /// Funkcja do dodawania nowego punktu telemetrycznego do kolejki
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="verticalSpeed"></param>
+        public void AddTelemetryDataPoint(double time, double verticalSpeed)
+        {
+            telemetryDataQueue.Enqueue(new ObservablePoint(time, verticalSpeed));
         }
 
     }

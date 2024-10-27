@@ -3,6 +3,7 @@ using GroundControlSystem.DataModels;
 using GroundControlSystem.TelemetryProcessing;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -47,6 +48,7 @@ namespace GNS
 
             // Uruchomienie obu watkow
             GUIThread.Start();
+            Thread.Sleep(5000);
             BackEndThread.Start();
 
         }
@@ -60,9 +62,11 @@ namespace GNS
         /// </summary>
         public static void BackEnd(TelemetryProcessor processor, USBManager usbManager)
         {
+            double time = 0;
+
             while (true)
             {
-
+                GNS formInstance = Application.OpenForms.OfType<GNS>().FirstOrDefault();
 
                 // 1, Pobranie danych z USB
                 byte[] rawData = usbManager.usbReceiver.ReceiveData();
@@ -77,6 +81,21 @@ namespace GNS
                 Console.WriteLine("Dane telemetryczne:");
                 Console.WriteLine(telemetryPacket.ToCSV());
 
+                // 5.Przeslij do GUI
+                double verticalSpeed = telemetryPacket.IMU.VerVel;
+
+                // Dodaj punkt telemetryczny do GUI
+                if (formInstance != null)
+                {
+                    formInstance.Invoke(new Action(() =>
+                    {
+                        formInstance.AddTelemetryDataPoint(time, verticalSpeed);
+                    }));
+                }
+
+                time += 0.5;
+
+                // 6. Czekaj okreslona chwile
                 Thread.Sleep(500);
             }
         }
