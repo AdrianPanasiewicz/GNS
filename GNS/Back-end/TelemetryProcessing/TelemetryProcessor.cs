@@ -85,7 +85,7 @@ namespace GroundControlSystem.TelemetryProcessing
         }
 
         /// <summary>
-        /// Zapisuje dane telemetryczne do pliku CSV.
+        /// Zapisuje dane telemetryczne do pliku CSV. Zalecane jest przeniesc plik CSV z folder Data, aby nie mieszac danych.
         /// </summary>
         /// <param name="packet">Pakiet telemetryczny do zapisania.</param>
         public void SaveToCSV(TelemetryPacket packet)
