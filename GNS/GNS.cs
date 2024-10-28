@@ -33,6 +33,7 @@ using System.Collections.Concurrent;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using GroundControlSystem.DataModels;
+using static GMap.NET.Entity.OpenStreetMapRouteEntity;
 
 namespace GNS
 {
@@ -41,6 +42,9 @@ namespace GNS
         private float pitch = 0;   // początkowa wartość pitch
         private float roll = 0;    // początkowa wartość roll
         private float heading = 0; // początkowa wartość heading
+
+        private double lat = 0;
+        private double lng = 0;
 
         private GameWindow gameWindow;
 
@@ -708,7 +712,7 @@ namespace GNS
 
         private void GNS_Load(object sender, EventArgs e)
         {
-            _RocketModel = LoadRocketModel("RocketPhoto/12217_rocket_v1_l1.obj");
+            LoadRocketModel("RocketPhoto/12217_rocket_v1_l1.obj");
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -736,7 +740,7 @@ namespace GNS
 
         }
 
-        private ModelVisual3D LoadRocketModel(string path)
+        private void LoadRocketModel(string path)
         {
             // Ścieżka do pliku modelu .obj
             string modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RocketPhoto", "12217_rocket_v1_l1.obj");
@@ -744,33 +748,32 @@ namespace GNS
             if (!File.Exists(modelPath))
             {
                 MessageBox.Show("Nie znaleziono pliku: " + modelPath);
-                return null;
+                return;
             }
 
             var importer = new ModelImporter();
             Model3D model = importer.Load(modelPath); // ModelImporter automatycznie załaduje plik .mtl, jeśli jest w tej samej lokalizacji i .obj na niego wskazuje
 
             // Utwórz model 3D do wyświetlenia
-            var modelVisual3D = new ModelVisual3D { Content = model };
+            _RocketModel = new ModelVisual3D { Content = model };
 
             // Skonfiguruj grupę transformacji
             var transformGroup = new Transform3DGroup();
             transformGroup.Children.Add(new ScaleTransform3D(0.0012, 0.0012, 0.0012)); // Skalowanie modelu
-            modelVisual3D.Transform = transformGroup;
+            _RocketModel.Transform = transformGroup;
 
             // Dodaj model do widoku
-            viewport.Children.Add(modelVisual3D);
+            viewport.Children.Add(_RocketModel);
 
             // Ustaw kamerę
             viewport.Camera.Position = new Point3D(2, 2, 2.5);
             viewport.Camera.LookDirection = new Vector3D(-1, -1, -1);
             viewport.Camera.UpDirection = new Vector3D(0, 0, 1);
 
-            UpdateRocketOrientation(modelVisual3D); // Aktualizacja orientacji
-            return modelVisual3D;
+            UpdateRocketOrientation(); // Aktualizacja orientacji
         }
 
-        private void UpdateRocketOrientation(ModelVisual3D modelVisual3D)
+        private void UpdateRocketOrientation()
         {
             double pitch = GetPitchValue();
             double roll = GetRollValue();
@@ -789,7 +792,7 @@ namespace GNS
             viewport.IsEnabled = false;
 
             // Dodaj rotację do istniejącej grupy transformacji
-            var transformGroup = (Transform3DGroup)modelVisual3D.Transform;
+            var transformGroup = (Transform3DGroup)_RocketModel.Transform;
             if (transformGroup.Children.Count > 1)
             {
                 transformGroup.Children[1] = rotationGroup;
@@ -838,15 +841,28 @@ namespace GNS
                         label11.Text = (telemetryPacket.IMU.VelAcc).ToString() + " m/s^2";
                         label12.Text = (telemetryPacket.GPS.AltitudeGPS).ToString() + " m";
 
-                        // Przeslij nowe wspolrzedne #TODO 
-                        //label8.Text = telemetryPacket.GPS.Latitude + "° N";
-                        //label9.Text = telemetryPacket.GPS.Longitude + "° E";
 
+
+                        // Zakutalizuj wartosci obrotu rakiety
                         pitch = telemetryPacket.IMU.Pitch;
                         roll = telemetryPacket.IMU.Roll;
                         heading = telemetryPacket.IMU.Heading;
 
-                        UpdateRocketOrientation(_RocketModel);
+
+                        // Wyswietl wartosci obrotu rakiety na GUI
+                        label18.Text = $"{(int)pitch}°";
+                        label19.Text = $"{(int)roll}°";
+                        label20.Text = $"{(int)heading}°";
+
+                        //lat = telemetryPacket.GPS.Latitude;
+                        //lng = telemetryPacket.GPS.Longitude;
+                        //gMapControl.Position = new PointLatLng(lat, lng); // Ustawienie pozycji (Warszawa)
+
+                        // Przeslij nowe wspolrzedne #TODO 
+                        //label8.Text = telemetryPacket.GPS.Latitude + "° N";
+                        //label9.Text = telemetryPacket.GPS.Longitude + "° E";
+
+                        UpdateRocketOrientation();
 
                     }));
                 }
