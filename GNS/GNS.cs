@@ -50,7 +50,7 @@ namespace GNS
         private HelixViewport3D viewport;
 
         private ConcurrentQueue<TelemetryPacket> telemetryDataQueue;
-        private SeriesCollection seriesCollection;
+        private SeriesCollection seriesCollection1, seriesCollection2, seriesCollection3;
 
         public GNS()
         {
@@ -477,7 +477,7 @@ namespace GNS
             label2.ForeColor = Color.White; // Kolor czcionki na biały
             label2.BackColor = Color.Transparent; // Przezroczyste tło
 
-            label3.Text = "Satellites over ground";
+            label3.Text = "GPS Altitude";
             label3.Font = new Font("Times New Roman", 24, FontStyle.Bold);
             label3.Location = new Point(((panel7.Width - label3.Width) / 2), 10);
             label3.TextAlign = ContentAlignment.MiddleCenter;
@@ -514,21 +514,21 @@ namespace GNS
 
             label10.Text = "0 m/s";
             label10.Font = new Font("Times New Roman", 18, FontStyle.Bold);
-            label10.Location = new Point(((panel.Width - label10.Width) / 2), 50);
+            label10.Location = new Point(((panel.Width - label10.Width - 45) / 2), 50);
             label10.TextAlign = ContentAlignment.MiddleCenter;
             label10.ForeColor = Color.White; // Kolor czcionki na biały
             label10.BackColor = Color.Transparent; // Przezroczyste tło
 
             label11.Text = "0 m/s^2";
             label11.Font = new Font("Times New Roman", 18, FontStyle.Bold);
-            label11.Location = new Point(((panel6.Width - label11.Width) / 2), 50);
+            label11.Location = new Point(((panel6.Width - label11.Width - 45) / 2), 50);
             label11.TextAlign = ContentAlignment.MiddleCenter;
             label11.ForeColor = Color.White; // Kolor czcionki na biały
             label11.BackColor = Color.Transparent; // Przezroczyste tło
 
-            label12.Text = "0";
+            label12.Text = "0 m";
             label12.Font = new Font("Times New Roman", 18, FontStyle.Bold);
-            label12.Location = new Point(((panel7.Width - label12.Width) / 2), 50);
+            label12.Location = new Point(((panel7.Width - label12.Width - 45) / 2), 50);
             label12.TextAlign = ContentAlignment.MiddleCenter;
             label12.ForeColor = Color.White; // Kolor czcionki na biały
             label12.BackColor = Color.Transparent; // Przezroczyste tłos
@@ -558,7 +558,7 @@ namespace GNS
 
             cartesianChart1.AxisY.Add(new LiveCharts.Wpf.Axis
             {
-                Title = "Y Axis",
+                Title = "v[m/s]",
                 Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White), // Kolor osi Y
                 FontSize = 18
             });
@@ -573,7 +573,7 @@ namespace GNS
 
             cartesianChart2.AxisY.Add(new LiveCharts.Wpf.Axis
             {
-                Title = "Y Axis",
+                Title = "a[m/s^2]",
                 Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White), // Kolor osi Y
                 FontSize = 18
             });
@@ -588,13 +588,13 @@ namespace GNS
 
             cartesianChart3.AxisY.Add(new LiveCharts.Wpf.Axis
             {
-                Title = "Y Axis",
+                Title = "h[m]",
                 Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White), // Kolor osi Y
                 FontSize = 18
             });
 
 
-            cartesianChart1.Series = seriesCollection = new SeriesCollection
+            cartesianChart1.Series = seriesCollection1 = new SeriesCollection
             {
                 new LineSeries
                 {
@@ -604,28 +604,21 @@ namespace GNS
                     Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 220, 20, 60))
                 }
             };
-            cartesianChart2.Series = new SeriesCollection
+            cartesianChart2.Series = seriesCollection2 = new SeriesCollection
             {
                 new LineSeries
                 {
-                    Values = new ChartValues<ObservablePoint>
-                    {
-                        new ObservablePoint(0,0)
-
-                    },
+                    Values = new ChartValues<ObservablePoint>(),
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Blue),
                     Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 30, 144, 255))
                 }
             };
-            cartesianChart3.Series = new SeriesCollection
+            cartesianChart3.Series = seriesCollection3 = new SeriesCollection
             {
                 new LineSeries
                 {
-                    Values = new ChartValues<ObservablePoint>
-                    {
-                        new ObservablePoint(0,0)
-                    },
+                    Values = new ChartValues<ObservablePoint>(),
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Green),
                     Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 124, 252, 0))
@@ -830,10 +823,19 @@ namespace GNS
                     // Zaktualizuj wykres w bezpieczny dla wątków sposób
                     this.Invoke(new Action(() =>
                     {
+                        // Oblicz timestamp od uruchomienie programu
                         _nowDateTime = DateTime.Now;
                         _timestamp = (_nowDateTime - _startDateTime).TotalSeconds;
 
-                        seriesCollection[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.IMU.VerVel));
+                        // Wyslij punkt do wykresow
+                        seriesCollection1[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.IMU.VerVel));
+                        seriesCollection2[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.IMU.VelAcc));
+                        seriesCollection3[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.GPS.AltitudeGPS));
+                        label10.Text = (telemetryPacket.IMU.VerVel).ToString() + " m/s";
+                        label11.Text = (telemetryPacket.IMU.VelAcc).ToString() + " m/s^2";
+                        label12.Text = (telemetryPacket.GPS.AltitudeGPS).ToString() + " m";
+
+
                     }));
                 }
 
