@@ -26,7 +26,7 @@ Communication: Real-time data communication with the rocket
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/AdrianPanasiewicz/GNS-Lik.git
+git clone https://github.com/AdrianPanasiewicz/GNS.git
 ```
 2. Open the project in Visual Studio or another C# IDE.
 3. Build the solution and run the application.
