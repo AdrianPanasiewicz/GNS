@@ -65,7 +65,6 @@ namespace GNS
         /// <param name="usbManager"></param>
         public static void BackEnd(TelemetryProcessor processor, USBManager usbManager)
         {
-            double time = 0;
 
             while (true)
             {
@@ -90,11 +89,9 @@ namespace GNS
                 {
                     formInstance.Invoke(new Action(() =>
                     {
-                        formInstance.AddTelemetryDataPoint(time, telemetryPacket);
+                        formInstance.AddTelemetryDataPoint(telemetryPacket);
                     }));
                 }
-
-                time += 0.5;
 
                 // 6. Czekaj okreslona chwile
                 Thread.Sleep(500);

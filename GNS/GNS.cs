@@ -819,6 +819,10 @@ namespace GNS
         /// </summary>
         private void UpdateChartLoop()
         {
+            DateTime _startDateTime = DateTime.Now;
+            DateTime _nowDateTime = DateTime.Now;
+            double _timestamp = 0;
+
             while (true)
             {
                 if (telemetryDataQueue.TryDequeue(out TelemetryPacket telemetryPacket))
@@ -826,7 +830,10 @@ namespace GNS
                     // Zaktualizuj wykres w bezpieczny dla wątków sposób
                     this.Invoke(new Action(() =>
                     {
-                        seriesCollection[0].Values.Add(new ObservablePoint(1, telemetryPacket.IMU.VerVel));
+                        _nowDateTime = DateTime.Now;
+                        _timestamp = (_nowDateTime - _startDateTime).TotalSeconds;
+
+                        seriesCollection[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.IMU.VerVel));
                     }));
                 }
 
@@ -840,7 +847,7 @@ namespace GNS
         /// </summary>
         /// <param name="time"></param>
         /// <param name="telemetryPacket"></param>
-        public void AddTelemetryDataPoint(double time, TelemetryPacket telemetryPacket)
+        public void AddTelemetryDataPoint(TelemetryPacket telemetryPacket)
         {
             telemetryDataQueue.Enqueue(telemetryPacket);
         }
