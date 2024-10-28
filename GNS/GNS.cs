@@ -32,6 +32,8 @@ using System.IO;
 using System.Collections.Concurrent;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using GroundControlSystem.DataModels;
+using static GMap.NET.Entity.OpenStreetMapRouteEntity;
 
 namespace GNS
 {
@@ -41,6 +43,9 @@ namespace GNS
         private float roll = 0;    // początkowa wartość roll
         private float heading = 0; // początkowa wartość heading
 
+        private double lat = 0;
+        private double lng = 0;
+
         private GameWindow gameWindow;
 
         private GMapControl gMapControl;
@@ -48,8 +53,10 @@ namespace GNS
         private ElementHost host;
         private HelixViewport3D viewport;
 
-        private ConcurrentQueue<ObservablePoint> telemetryDataQueue;
-        private SeriesCollection seriesCollection;
+        private ConcurrentQueue<TelemetryPacket> telemetryDataQueue;
+        private SeriesCollection seriesCollection1, seriesCollection2, seriesCollection3;
+
+        private ModelVisual3D _RocketModel;
 
         public GNS()
         {
@@ -59,7 +66,7 @@ namespace GNS
             this.BackColor = Color.FromArgb(255, 20, 33, 61);
             this.Load += new EventHandler(GNS_Load); // Dodanie zdarzenia Load
 
-            telemetryDataQueue = new ConcurrentQueue<ObservablePoint>();
+            telemetryDataQueue = new ConcurrentQueue<TelemetryPacket>();
 
             host = new ElementHost();
             host.Size = new Size(622, 542);
@@ -476,7 +483,7 @@ namespace GNS
             label2.ForeColor = Color.White; // Kolor czcionki na biały
             label2.BackColor = Color.Transparent; // Przezroczyste tło
 
-            label3.Text = "Satellites over ground";
+            label3.Text = "GPS Altitude";
             label3.Font = new Font("Times New Roman", 24, FontStyle.Bold);
             label3.Location = new Point(((panel7.Width - label3.Width) / 2), 10);
             label3.TextAlign = ContentAlignment.MiddleCenter;
@@ -513,21 +520,21 @@ namespace GNS
 
             label10.Text = "0 m/s";
             label10.Font = new Font("Times New Roman", 18, FontStyle.Bold);
-            label10.Location = new Point(((panel.Width - label10.Width) / 2), 50);
+            label10.Location = new Point(((panel.Width - label10.Width - 45) / 2), 50);
             label10.TextAlign = ContentAlignment.MiddleCenter;
             label10.ForeColor = Color.White; // Kolor czcionki na biały
             label10.BackColor = Color.Transparent; // Przezroczyste tło
 
             label11.Text = "0 m/s^2";
             label11.Font = new Font("Times New Roman", 18, FontStyle.Bold);
-            label11.Location = new Point(((panel6.Width - label11.Width) / 2), 50);
+            label11.Location = new Point(((panel6.Width - label11.Width - 45) / 2), 50);
             label11.TextAlign = ContentAlignment.MiddleCenter;
             label11.ForeColor = Color.White; // Kolor czcionki na biały
             label11.BackColor = Color.Transparent; // Przezroczyste tło
 
-            label12.Text = "0";
+            label12.Text = "0 m";
             label12.Font = new Font("Times New Roman", 18, FontStyle.Bold);
-            label12.Location = new Point(((panel7.Width - label12.Width) / 2), 50);
+            label12.Location = new Point(((panel7.Width - label12.Width - 45) / 2), 50);
             label12.TextAlign = ContentAlignment.MiddleCenter;
             label12.ForeColor = Color.White; // Kolor czcionki na biały
             label12.BackColor = Color.Transparent; // Przezroczyste tłos
@@ -557,7 +564,7 @@ namespace GNS
 
             cartesianChart1.AxisY.Add(new LiveCharts.Wpf.Axis
             {
-                Title = "Y Axis",
+                Title = "v[m/s]",
                 Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White), // Kolor osi Y
                 FontSize = 18
             });
@@ -572,7 +579,7 @@ namespace GNS
 
             cartesianChart2.AxisY.Add(new LiveCharts.Wpf.Axis
             {
-                Title = "Y Axis",
+                Title = "a[m/s^2]",
                 Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White), // Kolor osi Y
                 FontSize = 18
             });
@@ -587,13 +594,13 @@ namespace GNS
 
             cartesianChart3.AxisY.Add(new LiveCharts.Wpf.Axis
             {
-                Title = "Y Axis",
+                Title = "h[m]",
                 Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.White), // Kolor osi Y
                 FontSize = 18
             });
 
 
-            cartesianChart1.Series = seriesCollection = new SeriesCollection
+            cartesianChart1.Series = seriesCollection1 = new SeriesCollection
             {
                 new LineSeries
                 {
@@ -603,28 +610,21 @@ namespace GNS
                     Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 220, 20, 60))
                 }
             };
-            cartesianChart2.Series = new SeriesCollection
+            cartesianChart2.Series = seriesCollection2 = new SeriesCollection
             {
                 new LineSeries
                 {
-                    Values = new ChartValues<ObservablePoint>
-                    {
-                        new ObservablePoint(0,0)
-
-                    },
+                    Values = new ChartValues<ObservablePoint>(),
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Blue),
                     Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 30, 144, 255))
                 }
             };
-            cartesianChart3.Series = new SeriesCollection
+            cartesianChart3.Series = seriesCollection3 = new SeriesCollection
             {
                 new LineSeries
                 {
-                    Values = new ChartValues<ObservablePoint>
-                    {
-                        new ObservablePoint(0,0)
-                    },
+                    Values = new ChartValues<ObservablePoint>(),
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Green),
                     Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 124, 252, 0))
@@ -755,25 +755,25 @@ namespace GNS
             Model3D model = importer.Load(modelPath); // ModelImporter automatycznie załaduje plik .mtl, jeśli jest w tej samej lokalizacji i .obj na niego wskazuje
 
             // Utwórz model 3D do wyświetlenia
-            var modelVisual3D = new ModelVisual3D { Content = model };
+            _RocketModel = new ModelVisual3D { Content = model };
 
             // Skonfiguruj grupę transformacji
             var transformGroup = new Transform3DGroup();
             transformGroup.Children.Add(new ScaleTransform3D(0.0012, 0.0012, 0.0012)); // Skalowanie modelu
-            modelVisual3D.Transform = transformGroup;
+            _RocketModel.Transform = transformGroup;
 
             // Dodaj model do widoku
-            viewport.Children.Add(modelVisual3D);
+            viewport.Children.Add(_RocketModel);
 
             // Ustaw kamerę
             viewport.Camera.Position = new Point3D(2, 2, 2.5);
             viewport.Camera.LookDirection = new Vector3D(-1, -1, -1);
             viewport.Camera.UpDirection = new Vector3D(0, 0, 1);
 
-            UpdateRocketOrientation(modelVisual3D); // Aktualizacja orientacji
+            UpdateRocketOrientation(); // Aktualizacja orientacji
         }
 
-        private void UpdateRocketOrientation(ModelVisual3D modelVisual3D)
+        private void UpdateRocketOrientation()
         {
             double pitch = GetPitchValue();
             double roll = GetRollValue();
@@ -792,7 +792,7 @@ namespace GNS
             viewport.IsEnabled = false;
 
             // Dodaj rotację do istniejącej grupy transformacji
-            var transformGroup = (Transform3DGroup)modelVisual3D.Transform;
+            var transformGroup = (Transform3DGroup)_RocketModel.Transform;
             if (transformGroup.Children.Count > 1)
             {
                 transformGroup.Children[1] = rotationGroup;
@@ -818,14 +818,52 @@ namespace GNS
         /// </summary>
         private void UpdateChartLoop()
         {
+            DateTime _startDateTime = DateTime.Now;
+            DateTime _nowDateTime = DateTime.Now;
+            double _timestamp = 0;
+
             while (true)
             {
-                if (telemetryDataQueue.TryDequeue(out ObservablePoint newPoint))
+                if (telemetryDataQueue.TryDequeue(out TelemetryPacket telemetryPacket))
                 {
                     // Zaktualizuj wykres w bezpieczny dla wątków sposób
                     this.Invoke(new Action(() =>
                     {
-                        seriesCollection[0].Values.Add(newPoint);
+                        // Oblicz timestamp od uruchomienie programu
+                        _nowDateTime = DateTime.Now;
+                        _timestamp = (_nowDateTime - _startDateTime).TotalSeconds;
+
+                        // Wyslij punkt do wykresow
+                        seriesCollection1[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.IMU.VerVel));
+                        seriesCollection2[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.IMU.VelAcc));
+                        seriesCollection3[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.GPS.AltitudeGPS));
+                        label10.Text = (telemetryPacket.IMU.VerVel).ToString() + " m/s";
+                        label11.Text = (telemetryPacket.IMU.VelAcc).ToString() + " m/s^2";
+                        label12.Text = (telemetryPacket.GPS.AltitudeGPS).ToString() + " m";
+
+
+
+                        // Zakutalizuj wartosci obrotu rakiety
+                        pitch = telemetryPacket.IMU.Pitch;
+                        roll = telemetryPacket.IMU.Roll;
+                        heading = telemetryPacket.IMU.Heading;
+
+
+                        // Wyswietl wartosci obrotu rakiety na GUI
+                        label18.Text = $"{(int)pitch}°";
+                        label19.Text = $"{(int)roll}°";
+                        label20.Text = $"{(int)heading}°";
+
+                        //lat = telemetryPacket.GPS.Latitude;
+                        //lng = telemetryPacket.GPS.Longitude;
+                        //gMapControl.Position = new PointLatLng(lat, lng); // Ustawienie pozycji (Warszawa)
+
+                        // Przeslij nowe wspolrzedne #TODO 
+                        //label8.Text = telemetryPacket.GPS.Latitude + "° N";
+                        //label9.Text = telemetryPacket.GPS.Longitude + "° E";
+
+                        UpdateRocketOrientation();
+
                     }));
                 }
 
@@ -838,10 +876,10 @@ namespace GNS
         /// Funkcja do dodawania nowego punktu telemetrycznego do kolejki
         /// </summary>
         /// <param name="time"></param>
-        /// <param name="verticalSpeed"></param>
-        public void AddTelemetryDataPoint(double time, double verticalSpeed)
+        /// <param name="telemetryPacket"></param>
+        public void AddTelemetryDataPoint(TelemetryPacket telemetryPacket)
         {
-            telemetryDataQueue.Enqueue(new ObservablePoint(time, verticalSpeed));
+            telemetryDataQueue.Enqueue(telemetryPacket);
         }
 
     }
