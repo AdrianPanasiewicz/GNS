@@ -74,7 +74,7 @@ namespace GNS
 
             viewport = new HelixViewport3D();
             host.Child = viewport;
-            //LoadRocketModel("C:\\Users\\fs24f\\source\\repos\\GNS\\RocketPhoto\\12217_rocket_v1_l1.obj");
+            LoadRocketModel("C:\\Users\\fs24f\\source\\repos\\GNS\\RocketPhoto\\12217_rocket_v1_l1.obj");
 
             Panel panel = new Panel
             {
@@ -166,42 +166,42 @@ namespace GNS
             panelRakieta.Controls.Add(host);
 
             label15.Text = "Pitch:";
-            label15.Font = new Font("Times New Roman", 20, FontStyle.Bold);
+            label15.Font = new Font("Aptos", 20, FontStyle.Bold);
             label15.Location = new Point(30, 15);
             label15.TextAlign = ContentAlignment.MiddleCenter;
             label15.ForeColor = Color.White; // Kolor czcionki na biały
             label15.BackColor = Color.Transparent; // Przezroczyste tło
 
             label16.Text = "Roll:";
-            label16.Font = new Font("Times New Roman", 20, FontStyle.Bold);
+            label16.Font = new Font("Aptos", 20, FontStyle.Bold);
             label16.Location = new Point(40, 15);
             label16.TextAlign = ContentAlignment.MiddleCenter;
             label16.ForeColor = Color.White; // Kolor czcionki na biały
             label16.BackColor = Color.Transparent; // Przezroczyste tło
 
             label17.Text = "Heading:";
-            label17.Font = new Font("Times New Roman", 20, FontStyle.Bold);
+            label17.Font = new Font("Aptos", 20, FontStyle.Bold);
             label17.Location = new Point(20, 15);
             label17.TextAlign = ContentAlignment.MiddleCenter;
             label17.ForeColor = Color.White; // Kolor czcionki na biały
             label17.BackColor = Color.Transparent; // Przezroczyste tło
 
             label18.Text = $"{pitch}°";
-            label18.Font = new Font("Times New Roman", 20, FontStyle.Bold);
+            label18.Font = new Font("Aptos", 20, FontStyle.Bold);
             label18.Location = new Point(label15.Width + 30, 15);
             label18.TextAlign = ContentAlignment.MiddleCenter;
             label18.ForeColor = Color.White; // Kolor czcionki na biały
             label18.BackColor = Color.Transparent; // Przezroczyste tło
 
             label19.Text = $"{roll}°";
-            label19.Font = new Font("Times New Roman", 20, FontStyle.Bold);
+            label19.Font = new Font("Aptos", 20, FontStyle.Bold);
             label19.Location = new Point(label16.Width + 40, 15);
             label19.TextAlign = ContentAlignment.MiddleCenter;
             label19.ForeColor = Color.White; // Kolor czcionki na biały
             label19.BackColor = Color.Transparent; // Przezroczyste tło
 
             label20.Text = $"{heading}°";
-            label20.Font = new Font("Times New Roman", 20, FontStyle.Bold);
+            label20.Font = new Font("Aptos", 20, FontStyle.Bold);
             label20.Location = new Point(label17.Width + 20, 15);
             label20.TextAlign = ContentAlignment.MiddleCenter;
             label20.ForeColor = Color.White; // Kolor czcionki na biały
@@ -470,70 +470,70 @@ namespace GNS
             this.Controls.Add(panel10);
 
             label1.Text = "Vertical velocity";
-            label1.Font = new Font("Times New Roman", 24, FontStyle.Bold);
+            label1.Font = new Font("Aptos", 24, FontStyle.Bold);
             label1.Location = new Point((panel.Width - label1.Width) / 2, 10);
             label1.TextAlign = ContentAlignment.MiddleCenter;
             label1.ForeColor = Color.White; // Kolor czcionki na biały
             label1.BackColor = Color.Transparent; // Przezroczyste tło
 
             label2.Text = "Vertical acceleration";
-            label2.Font = new Font("Times New Roman", 24, FontStyle.Bold);
+            label2.Font = new Font("Aptos", 24, FontStyle.Bold);
             label2.Location = new Point(((panel6.Width - label2.Width) / 2), 10);
             label2.TextAlign = ContentAlignment.MiddleCenter;
             label2.ForeColor = Color.White; // Kolor czcionki na biały
             label2.BackColor = Color.Transparent; // Przezroczyste tło
 
             label3.Text = "GPS Altitude";
-            label3.Font = new Font("Times New Roman", 24, FontStyle.Bold);
+            label3.Font = new Font("Aptos", 24, FontStyle.Bold);
             label3.Location = new Point(((panel7.Width - label3.Width) / 2), 10);
             label3.TextAlign = ContentAlignment.MiddleCenter;
             label3.ForeColor = Color.White; // Kolor czcionki na biały
             label3.BackColor = Color.Transparent; // Przezroczyste tło
 
             label6.Text = "Latitude";
-            label6.Font = new Font("Times New Roman", 28, FontStyle.Bold);
+            label6.Font = new Font("Aptos", 28, FontStyle.Bold);
             label6.Location = new Point((panel4.Width - label6.Width) / 2, 20);
             label6.TextAlign = ContentAlignment.MiddleCenter;
             label6.ForeColor = Color.White; // Kolor czcionki na biały
             label6.BackColor = Color.Transparent; // Przezroczyste tło
 
             label7.Text = "Longitude";
-            label7.Font = new Font("Times New Roman", 28, FontStyle.Bold);
+            label7.Font = new Font("Aptos", 28, FontStyle.Bold);
             label7.Location = new Point((panel2.Width - label7.Width) / 2, 20);
             label7.TextAlign = ContentAlignment.MiddleCenter;
             label7.ForeColor = Color.White; // Kolor czcionki na biały
             label7.BackColor = Color.Transparent; // Przezroczyste tło
 
             label8.Text = "52°13'47.17\"N";
-            label8.Font = new Font("Times New Roman", 18, FontStyle.Bold);
+            label8.Font = new Font("Aptos", 18, FontStyle.Bold);
             label8.Location = new Point((panel4.Width - label8.Width) / 2, 80);
             label8.TextAlign = ContentAlignment.MiddleCenter;
             label8.ForeColor = Color.White; // Kolor czcionki na biały
             label8.BackColor = Color.Transparent; // Przezroczyste tło
 
             label9.Text = "21°0'42.41\"E";
-            label9.Font = new Font("Times New Roman", 18, FontStyle.Bold);
+            label9.Font = new Font("Aptos", 18, FontStyle.Bold);
             label9.Location = new Point((panel2.Width - label9.Width) / 2, 80);
             label9.TextAlign = ContentAlignment.MiddleCenter;
             label9.ForeColor = Color.White; // Kolor czcionki na biały
             label9.BackColor = Color.Transparent; // Przezroczyste tło
 
             label10.Text = "0 m/s";
-            label10.Font = new Font("Times New Roman", 18, FontStyle.Bold);
+            label10.Font = new Font("Aptos", 18, FontStyle.Bold);
             label10.Location = new Point(((panel.Width - label10.Width - 45) / 2), 50);
             label10.TextAlign = ContentAlignment.MiddleCenter;
             label10.ForeColor = Color.White; // Kolor czcionki na biały
             label10.BackColor = Color.Transparent; // Przezroczyste tło
 
             label11.Text = "0 m/s^2";
-            label11.Font = new Font("Times New Roman", 18, FontStyle.Bold);
+            label11.Font = new Font("Aptos", 18, FontStyle.Bold);
             label11.Location = new Point(((panel6.Width - label11.Width - 45) / 2), 50);
             label11.TextAlign = ContentAlignment.MiddleCenter;
             label11.ForeColor = Color.White; // Kolor czcionki na biały
             label11.BackColor = Color.Transparent; // Przezroczyste tło
 
             label12.Text = "0 m";
-            label12.Font = new Font("Times New Roman", 18, FontStyle.Bold);
+            label12.Font = new Font("Aptos", 18, FontStyle.Bold);
             label12.Location = new Point(((panel7.Width - label12.Width - 45) / 2), 50);
             label12.TextAlign = ContentAlignment.MiddleCenter;
             label12.ForeColor = Color.White; // Kolor czcionki na biały
@@ -541,17 +541,17 @@ namespace GNS
 
             cartesianChart1.Size = new Size(600, 250);
             cartesianChart1.Location = new Point(((panel.Width - cartesianChart1.Width) / 2), 90);
-            cartesianChart1.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            cartesianChart1.Font = new Font("Aptos", 14, FontStyle.Regular);
             cartesianChart1.BackColor = Color.Transparent;
 
             cartesianChart2.Size = new Size(600, 250);
             cartesianChart2.Location = new Point(((panel6.Width - cartesianChart2.Width) / 2), 90);
-            cartesianChart2.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            cartesianChart2.Font = new Font("Aptos", 14, FontStyle.Regular);
             cartesianChart2.BackColor = Color.Transparent;
 
             cartesianChart3.Size = new Size(600, 250);
             cartesianChart3.Location = new Point(((panel7.Width - cartesianChart3.Width) / 2), 90);
-            cartesianChart3.Font = new Font("Times New Roman", 14, FontStyle.Regular);
+            cartesianChart3.Font = new Font("Aptos", 14, FontStyle.Regular);
             cartesianChart3.BackColor = Color.Transparent;
 
             cartesianChart1.AxisX.Add(new LiveCharts.Wpf.Axis
@@ -607,7 +607,9 @@ namespace GNS
                     Values = new ChartValues<ObservablePoint>(),
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Red),
-                    Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 220, 20, 60))
+                    Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 220, 20, 60)),
+                    LineSmoothness = 0
+
                 }
             };
             cartesianChart2.Series = seriesCollection2 = new SeriesCollection
@@ -617,7 +619,8 @@ namespace GNS
                     Values = new ChartValues<ObservablePoint>(),
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Blue),
-                    Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 30, 144, 255))
+                    Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 30, 144, 255)),
+                    LineSmoothness = 0
                 }
             };
             cartesianChart3.Series = seriesCollection3 = new SeriesCollection
@@ -627,7 +630,8 @@ namespace GNS
                     Values = new ChartValues<ObservablePoint>(),
                     PointGeometrySize = 12,
                     Stroke = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Green),
-                    Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 124, 252, 0))
+                    Fill = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(50, 124, 252, 0)),
+                    LineSmoothness = 0
                 }
             };
 
@@ -656,6 +660,8 @@ namespace GNS
                 MinorDistance = 1,
                 MajorDistance = 5
             });
+
+
 
             // Uruchomienie wątku do aktualizacji wykresu
             Thread guiUpdateThread = new Thread(UpdateChartLoop);
@@ -712,7 +718,7 @@ namespace GNS
 
         private void GNS_Load(object sender, EventArgs e)
         {
-            LoadRocketModel("RocketPhoto/12217_rocket_v1_l1.obj");
+            // LoadRocketModel("RocketPhoto/12217_rocket_v1_l1.obj");
         }
 
         private void label2_Click(object sender, EventArgs e)
