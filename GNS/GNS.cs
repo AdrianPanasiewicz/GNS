@@ -32,6 +32,7 @@ using System.IO;
 using System.Collections.Concurrent;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using GroundControlSystem.DataModels;
 
 namespace GNS
 {
@@ -48,7 +49,7 @@ namespace GNS
         private ElementHost host;
         private HelixViewport3D viewport;
 
-        private ConcurrentQueue<ObservablePoint> telemetryDataQueue;
+        private ConcurrentQueue<TelemetryPacket> telemetryDataQueue;
         private SeriesCollection seriesCollection;
 
         public GNS()
@@ -59,7 +60,7 @@ namespace GNS
             this.BackColor = Color.FromArgb(255, 20, 33, 61);
             this.Load += new EventHandler(GNS_Load); // Dodanie zdarzenia Load
 
-            telemetryDataQueue = new ConcurrentQueue<ObservablePoint>();
+            telemetryDataQueue = new ConcurrentQueue<TelemetryPacket>();
 
             host = new ElementHost();
             host.Size = new Size(622, 542);
@@ -820,12 +821,12 @@ namespace GNS
         {
             while (true)
             {
-                if (telemetryDataQueue.TryDequeue(out ObservablePoint newPoint))
+                if (telemetryDataQueue.TryDequeue(out TelemetryPacket telemetryPacket))
                 {
                     // Zaktualizuj wykres w bezpieczny dla wątków sposób
                     this.Invoke(new Action(() =>
                     {
-                        seriesCollection[0].Values.Add(newPoint);
+                        seriesCollection[0].Values.Add(new ObservablePoint(1, telemetryPacket.IMU.VerVel));
                     }));
                 }
 
@@ -838,10 +839,10 @@ namespace GNS
         /// Funkcja do dodawania nowego punktu telemetrycznego do kolejki
         /// </summary>
         /// <param name="time"></param>
-        /// <param name="verticalSpeed"></param>
-        public void AddTelemetryDataPoint(double time, double verticalSpeed)
+        /// <param name="telemetryPacket"></param>
+        public void AddTelemetryDataPoint(double time, TelemetryPacket telemetryPacket)
         {
-            telemetryDataQueue.Enqueue(new ObservablePoint(time, verticalSpeed));
+            telemetryDataQueue.Enqueue(telemetryPacket);
         }
 
     }

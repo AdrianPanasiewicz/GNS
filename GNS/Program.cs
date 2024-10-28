@@ -53,6 +53,7 @@ namespace GNS
 
         }
 
+
         /// <summary>
         /// Funkcja do obslugi backend:
         /// 1. Pobieranie danych z USB.
@@ -60,6 +61,8 @@ namespace GNS
         /// 3. Zapisywanie do pliku CSV.
         /// 4. Przesylanie do Front- end.
         /// </summary>
+        /// <param name="processor"></param>
+        /// <param name="usbManager"></param>
         public static void BackEnd(TelemetryProcessor processor, USBManager usbManager)
         {
             double time = 0;
@@ -81,15 +84,13 @@ namespace GNS
                 Console.WriteLine("Dane telemetryczne:");
                 Console.WriteLine(telemetryPacket.ToCSV());
 
-                // 5.Przeslij do GUI
-                double verticalSpeed = telemetryPacket.IMU.VerVel;
 
-                // Dodaj punkt telemetryczny do GUI
+                // 5. Przeslij dane telemetryczne do GUI
                 if (formInstance != null)
                 {
                     formInstance.Invoke(new Action(() =>
                     {
-                        formInstance.AddTelemetryDataPoint(time, verticalSpeed);
+                        formInstance.AddTelemetryDataPoint(time, telemetryPacket);
                     }));
                 }
 
