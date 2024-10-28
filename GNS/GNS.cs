@@ -848,7 +848,7 @@ namespace GNS
                         roll = telemetryPacket.IMU.Roll;
                         heading = telemetryPacket.IMU.Heading;
 
-
+                        // Change
                         // Wyswietl wartosci obrotu rakiety na GUI
                         label18.Text = $"{(int)pitch}°";
                         label19.Text = $"{(int)roll}°";
