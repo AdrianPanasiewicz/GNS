@@ -52,6 +52,8 @@ namespace GNS
         private ConcurrentQueue<TelemetryPacket> telemetryDataQueue;
         private SeriesCollection seriesCollection1, seriesCollection2, seriesCollection3;
 
+        private ModelVisual3D _RocketModel;
+
         public GNS()
         {
             InitializeComponent();
@@ -706,7 +708,7 @@ namespace GNS
 
         private void GNS_Load(object sender, EventArgs e)
         {
-            LoadRocketModel("RocketPhoto/12217_rocket_v1_l1.obj");
+            _RocketModel = LoadRocketModel("RocketPhoto/12217_rocket_v1_l1.obj");
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -734,7 +736,7 @@ namespace GNS
 
         }
 
-        private void LoadRocketModel(string path)
+        private ModelVisual3D LoadRocketModel(string path)
         {
             // Ścieżka do pliku modelu .obj
             string modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RocketPhoto", "12217_rocket_v1_l1.obj");
@@ -742,7 +744,7 @@ namespace GNS
             if (!File.Exists(modelPath))
             {
                 MessageBox.Show("Nie znaleziono pliku: " + modelPath);
-                return;
+                return null;
             }
 
             var importer = new ModelImporter();
@@ -765,6 +767,7 @@ namespace GNS
             viewport.Camera.UpDirection = new Vector3D(0, 0, 1);
 
             UpdateRocketOrientation(modelVisual3D); // Aktualizacja orientacji
+            return modelVisual3D;
         }
 
         private void UpdateRocketOrientation(ModelVisual3D modelVisual3D)
@@ -835,6 +838,15 @@ namespace GNS
                         label11.Text = (telemetryPacket.IMU.VelAcc).ToString() + " m/s^2";
                         label12.Text = (telemetryPacket.GPS.AltitudeGPS).ToString() + " m";
 
+                        // Przeslij nowe wspolrzedne #TODO 
+                        //label8.Text = telemetryPacket.GPS.Latitude + "° N";
+                        //label9.Text = telemetryPacket.GPS.Longitude + "° E";
+
+                        pitch = telemetryPacket.IMU.Pitch;
+                        roll = telemetryPacket.IMU.Roll;
+                        heading = telemetryPacket.IMU.Heading;
+
+                        UpdateRocketOrientation(_RocketModel);
 
                     }));
                 }
