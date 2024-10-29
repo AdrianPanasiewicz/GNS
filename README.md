@@ -1,11 +1,9 @@
-# GNS
-This is repository for ground control system and data representation for Likwidator project.
-
-**Likwidator Rocket - Ground Station**
+# GNS - Ground Station
+This is repository for ground control system and data representation for Likwidator rocket project.
 
 This repository contains the source code for the Ground Station (GNS) of the Likwidator Rocket project. The GNS is responsible for receiving, displaying, and saving real-time data from the rocket during flight.
 
-**Features**
+## Features
 
 Real-time data display: The GNS shows telemetry data from the rocket, such as altitude, speed, and other critical flight information.
 
@@ -15,13 +13,15 @@ Mission Abort System: In case of flight anomalies, the GNS allows manual interve
 
 User-Friendly GUI: The application features a graphical user interface developed in C# using the .NET framework.
 
-**Technology Stack**
+## Technology Stack
 
 Programming Language: C#
+
 Framework: .NET
+
 Communication: Real-time data communication with the rocket
 
-**Installation**
+## Installation
 
 1. Clone this repository:
 
@@ -31,13 +31,13 @@ git clone https://github.com/AdrianPanasiewicz/GNS.git
 2. Open the project in Visual Studio or another C# IDE.
 3. Build the solution and run the application.
 
-**Usage**
+## Usage
 
 Launch the application from the GUI.
 Connect the ground control system to the rocket via the specified communication protocol.
 Monitor the real-time data.
 
-**Contribution**
+## Contribution
 
 The following contributed to the project:
 1. Filip Sudak -  Front-end,
@@ -48,6 +48,6 @@ The following contributed to the project:
 
 We welcome contributions! Feel free to open an issue or submit a pull request.
 
-**License**
+## License
 
 This project is licensed under the Apache License 2.0.
