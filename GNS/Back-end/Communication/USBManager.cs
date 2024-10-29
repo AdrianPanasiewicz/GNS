@@ -25,16 +25,5 @@ namespace GroundControlSystem.Communication
                 usbReceiver = new USBReceiver();
             }
         }
-
-        /// <summary>
-        /// Rozpoczyna proces odbierania danych z wybranego źródła (USB lub symulacja).
-        /// </summary>
-        public void StartReceivingData()
-        {
-            usbReceiver.InitializeConnection();
-            var data = usbReceiver.ReceiveData();
-            Console.WriteLine($"Odebrano dane: {BitConverter.ToString(data)}");
-            usbReceiver.CloseConnection();
-        }
     }
 }
