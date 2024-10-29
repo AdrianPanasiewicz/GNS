@@ -34,6 +34,7 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using GroundControlSystem.DataModels;
 using static GMap.NET.Entity.OpenStreetMapRouteEntity;
+using System.Windows.Media;
 
 namespace GNS
 {
@@ -63,7 +64,7 @@ namespace GNS
             InitializeComponent();
             this.DoubleBuffered = true;
             this.Size = new Size(1920, 1080);
-            this.BackColor = Color.FromArgb(255, 20, 33, 61);
+            this.BackColor = System.Drawing.Color.FromArgb(255, 20, 33, 61);
             this.Load += new EventHandler(GNS_Load); // Dodanie zdarzenia Load
 
             telemetryDataQueue = new ConcurrentQueue<TelemetryPacket>();
@@ -76,12 +77,51 @@ namespace GNS
             host.Child = viewport;
             LoadRocketModel("C:\\Users\\fs24f\\source\\repos\\GNS\\RocketPhoto\\12217_rocket_v1_l1.obj");
 
+            // Create and define the axis lines
+            var xAxis = new LinesVisual3D
+            {
+                Color = Colors.Red,
+                Thickness = 2,
+                Points = new Point3DCollection
+                {
+                    new Point3D(-0.5, -0.5, -2),
+                    new Point3D(-0.2, -0.5, -2) 
+                }
+            };
+
+            var yAxis = new LinesVisual3D
+            {
+                Color = Colors.Green,
+                Thickness = 2,
+                Points = new Point3DCollection
+        {
+            new Point3D(-0.5, -0.5, -2),
+            new Point3D(-0.5, -0.2, -2)
+        }
+            };
+
+            var zAxis = new LinesVisual3D
+            {
+                Color = Colors.Blue,
+                Thickness = 2,
+                Points = new Point3DCollection
+        {
+            new Point3D(-0.5, -0.5, -2),
+            new Point3D(-0.5, -0.5, -1.7) 
+        }
+            };
+
+            // Add the axes to the viewport
+            viewport.Children.Add(xAxis);
+            viewport.Children.Add(yAxis);
+            viewport.Children.Add(zAxis);
+
             Panel panel = new Panel
             {
                 Size = new Size(630, 350),
                 Location = new Point(10, 10),
                 AutoScroll = true,
-                BackColor = Color.Transparent,
+                BackColor = System.Drawing.Color.Transparent,
             };
 
             panel.Paint += (sender, e) =>
@@ -94,10 +134,10 @@ namespace GNS
 
                 // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
                 ControlPaint.DrawBorder(e.Graphics, panel.ClientRectangle,
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
             };
 
             panel.Controls.Add(cartesianChart1);
@@ -112,7 +152,7 @@ namespace GNS
                 Location = new Point(1605, 860),
                 //Dock = DockStyle.Fill,
                 AutoScroll = true,
-                BackColor = Color.Transparent,
+                BackColor = System.Drawing.Color.Transparent,
             };
 
             panel2.Paint += (sender, e) =>
@@ -125,10 +165,10 @@ namespace GNS
 
                 // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
                 ControlPaint.DrawBorder(e.Graphics, panel2.ClientRectangle,
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
             };
 
             panel2.Controls.Add(label7);
@@ -140,7 +180,7 @@ namespace GNS
                 Size = new Size(630, 550),
                 Location = new Point(650, 370),
                 //BackColor = Color.FromArgb(255, 237, 237, 237),
-                BackColor = Color.Transparent,
+                BackColor = System.Drawing.Color.Transparent,
                 BorderStyle = BorderStyle.None
             };
 
@@ -157,10 +197,10 @@ namespace GNS
 
                 // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
                 ControlPaint.DrawBorder(e.Graphics, panelRakieta.ClientRectangle,
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
             };
 
             panelRakieta.Controls.Add(host);
@@ -169,43 +209,43 @@ namespace GNS
             label15.Font = new Font("Aptos", 20, FontStyle.Bold);
             label15.Location = new Point(30, 15);
             label15.TextAlign = ContentAlignment.MiddleCenter;
-            label15.ForeColor = Color.White; // Kolor czcionki na biały
-            label15.BackColor = Color.Transparent; // Przezroczyste tło
+            label15.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label15.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label16.Text = "Roll:";
             label16.Font = new Font("Aptos", 20, FontStyle.Bold);
             label16.Location = new Point(40, 15);
             label16.TextAlign = ContentAlignment.MiddleCenter;
-            label16.ForeColor = Color.White; // Kolor czcionki na biały
-            label16.BackColor = Color.Transparent; // Przezroczyste tło
+            label16.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label16.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label17.Text = "Heading:";
             label17.Font = new Font("Aptos", 20, FontStyle.Bold);
             label17.Location = new Point(20, 15);
             label17.TextAlign = ContentAlignment.MiddleCenter;
-            label17.ForeColor = Color.White; // Kolor czcionki na biały
-            label17.BackColor = Color.Transparent; // Przezroczyste tło
+            label17.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label17.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label18.Text = $"{pitch}°";
             label18.Font = new Font("Aptos", 20, FontStyle.Bold);
             label18.Location = new Point(label15.Width + 30, 15);
             label18.TextAlign = ContentAlignment.MiddleCenter;
-            label18.ForeColor = Color.White; // Kolor czcionki na biały
-            label18.BackColor = Color.Transparent; // Przezroczyste tło
+            label18.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label18.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label19.Text = $"{roll}°";
             label19.Font = new Font("Aptos", 20, FontStyle.Bold);
             label19.Location = new Point(label16.Width + 40, 15);
             label19.TextAlign = ContentAlignment.MiddleCenter;
-            label19.ForeColor = Color.White; // Kolor czcionki na biały
-            label19.BackColor = Color.Transparent; // Przezroczyste tło
+            label19.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label19.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label20.Text = $"{heading}°";
             label20.Font = new Font("Aptos", 20, FontStyle.Bold);
             label20.Location = new Point(label17.Width + 20, 15);
             label20.TextAlign = ContentAlignment.MiddleCenter;
-            label20.ForeColor = Color.White; // Kolor czcionki na biały
-            label20.BackColor = Color.Transparent; // Przezroczyste tło
+            label20.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label20.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             Panel panel3 = new Panel
             {
@@ -213,7 +253,7 @@ namespace GNS
                 Location = new Point(1290, 370),
                 //Dock = DockStyle.Fill,
                 AutoScroll = true,
-                BackColor = Color.Transparent,
+                BackColor = System.Drawing.Color.Transparent,
             };
 
             panel3.Paint += (sender, e) =>
@@ -227,10 +267,10 @@ namespace GNS
                 // 70, 103, 195
                 // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
                 ControlPaint.DrawBorder(e.Graphics, panel3.ClientRectangle,
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
             };
 
             gMapControl = new GMapControl
@@ -274,7 +314,7 @@ namespace GNS
                 Size = new Size(305, 130),
                 Location = new Point(1290, 860),
                 AutoScroll = true,
-                BackColor = Color.Transparent,
+                BackColor = System.Drawing.Color.Transparent,
             };
 
             panel4.Paint += (sender, e) =>
@@ -287,10 +327,10 @@ namespace GNS
                 // 2, 62, 138
                 // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
                 ControlPaint.DrawBorder(e.Graphics, panel4.ClientRectangle,
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
             };
 
             panel4.Controls.Add(label6);
@@ -303,7 +343,7 @@ namespace GNS
                 Location = new Point(10, 370),
                 //Dock = DockStyle.Fill,
                 AutoScroll = true,
-                BackColor = Color.Transparent,
+                BackColor = System.Drawing.Color.Transparent,
             };
 
             panel5.Paint += (sender, e) =>
@@ -316,10 +356,10 @@ namespace GNS
 
                 // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
                 ControlPaint.DrawBorder(e.Graphics, panel5.ClientRectangle,
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
             };
 
             this.Controls.Add(panel5);
@@ -329,7 +369,7 @@ namespace GNS
                 Size = new Size(630, 350),
                 Location = new Point(650, 10),
                 AutoScroll = true,
-                BackColor = Color.Transparent,
+                BackColor = System.Drawing.Color.Transparent,
             };
 
             panel6.Paint += (sender, e) =>
@@ -342,10 +382,10 @@ namespace GNS
 
                 // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
                 ControlPaint.DrawBorder(e.Graphics, panel6.ClientRectangle,
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
             };
 
             panel6.Controls.Add(cartesianChart2);
@@ -358,7 +398,7 @@ namespace GNS
                 Size = new Size(620, 350),
                 Location = new Point(1290, 10),
                 AutoScroll = true,
-                BackColor = Color.Transparent,
+                BackColor = System.Drawing.Color.Transparent,
             };
 
             panel7.Paint += (sender, e) =>
@@ -371,10 +411,10 @@ namespace GNS
 
                 // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
                 ControlPaint.DrawBorder(e.Graphics, panel7.ClientRectangle,
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
             };
 
             panel7.Controls.Add(cartesianChart3);
@@ -388,7 +428,7 @@ namespace GNS
                 Location = new Point(650, 930),
                 //Dock = DockStyle.Fill,
                 AutoScroll = true,
-                BackColor = Color.Transparent,
+                BackColor = System.Drawing.Color.Transparent,
             };
 
             panel8.Paint += (sender, e) =>
@@ -401,10 +441,10 @@ namespace GNS
 
                 // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
                 ControlPaint.DrawBorder(e.Graphics, panel8.ClientRectangle,
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
             };
 
             panel8.Controls.Add(label15);
@@ -417,7 +457,7 @@ namespace GNS
                 Location = new Point(860, 930),
                 //Dock = DockStyle.Fill,
                 AutoScroll = true,
-                BackColor = Color.Transparent,
+                BackColor = System.Drawing.Color.Transparent,
             };
 
             panel9.Paint += (sender, e) =>
@@ -430,10 +470,10 @@ namespace GNS
 
                 // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
                 ControlPaint.DrawBorder(e.Graphics, panel9.ClientRectangle,
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
             };
 
             panel9.Controls.Add(label16);
@@ -446,7 +486,7 @@ namespace GNS
                 Size = new Size(210, 60),
                 Location = new Point(1070, 930),
                 AutoScroll = true,
-                BackColor = Color.Transparent,
+                BackColor = System.Drawing.Color.Transparent,
             };
 
             panel10.Paint += (sender, e) =>
@@ -459,10 +499,10 @@ namespace GNS
 
                 // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
                 ControlPaint.DrawBorder(e.Graphics, panel10.ClientRectangle,
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
-                    Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
             };
 
             panel10.Controls.Add(label17);
@@ -473,86 +513,86 @@ namespace GNS
             label1.Font = new Font("Aptos", 24, FontStyle.Bold);
             label1.Location = new Point((panel.Width - label1.Width) / 2, 10);
             label1.TextAlign = ContentAlignment.MiddleCenter;
-            label1.ForeColor = Color.White; // Kolor czcionki na biały
-            label1.BackColor = Color.Transparent; // Przezroczyste tło
+            label1.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label1.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label2.Text = "Vertical acceleration";
             label2.Font = new Font("Aptos", 24, FontStyle.Bold);
             label2.Location = new Point(((panel6.Width - label2.Width) / 2), 10);
             label2.TextAlign = ContentAlignment.MiddleCenter;
-            label2.ForeColor = Color.White; // Kolor czcionki na biały
-            label2.BackColor = Color.Transparent; // Przezroczyste tło
+            label2.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label2.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label3.Text = "GPS Altitude";
             label3.Font = new Font("Aptos", 24, FontStyle.Bold);
             label3.Location = new Point(((panel7.Width - label3.Width) / 2), 10);
             label3.TextAlign = ContentAlignment.MiddleCenter;
-            label3.ForeColor = Color.White; // Kolor czcionki na biały
-            label3.BackColor = Color.Transparent; // Przezroczyste tło
+            label3.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label3.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label6.Text = "Latitude";
             label6.Font = new Font("Aptos", 28, FontStyle.Bold);
             label6.Location = new Point((panel4.Width - label6.Width) / 2, 20);
             label6.TextAlign = ContentAlignment.MiddleCenter;
-            label6.ForeColor = Color.White; // Kolor czcionki na biały
-            label6.BackColor = Color.Transparent; // Przezroczyste tło
+            label6.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label6.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label7.Text = "Longitude";
             label7.Font = new Font("Aptos", 28, FontStyle.Bold);
             label7.Location = new Point((panel2.Width - label7.Width) / 2, 20);
             label7.TextAlign = ContentAlignment.MiddleCenter;
-            label7.ForeColor = Color.White; // Kolor czcionki na biały
-            label7.BackColor = Color.Transparent; // Przezroczyste tło
+            label7.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label7.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label8.Text = "52°13'47.17\"N";
             label8.Font = new Font("Aptos", 18, FontStyle.Bold);
             label8.Location = new Point((panel4.Width - label8.Width) / 2, 80);
             label8.TextAlign = ContentAlignment.MiddleCenter;
-            label8.ForeColor = Color.White; // Kolor czcionki na biały
-            label8.BackColor = Color.Transparent; // Przezroczyste tło
+            label8.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label8.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label9.Text = "21°0'42.41\"E";
             label9.Font = new Font("Aptos", 18, FontStyle.Bold);
             label9.Location = new Point((panel2.Width - label9.Width) / 2, 80);
             label9.TextAlign = ContentAlignment.MiddleCenter;
-            label9.ForeColor = Color.White; // Kolor czcionki na biały
-            label9.BackColor = Color.Transparent; // Przezroczyste tło
+            label9.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label9.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label10.Text = "0 m/s";
             label10.Font = new Font("Aptos", 18, FontStyle.Bold);
             label10.Location = new Point(((panel.Width - label10.Width - 45) / 2), 50);
             label10.TextAlign = ContentAlignment.MiddleCenter;
-            label10.ForeColor = Color.White; // Kolor czcionki na biały
-            label10.BackColor = Color.Transparent; // Przezroczyste tło
+            label10.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label10.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label11.Text = "0 m/s^2";
             label11.Font = new Font("Aptos", 18, FontStyle.Bold);
             label11.Location = new Point(((panel6.Width - label11.Width - 45) / 2), 50);
             label11.TextAlign = ContentAlignment.MiddleCenter;
-            label11.ForeColor = Color.White; // Kolor czcionki na biały
-            label11.BackColor = Color.Transparent; // Przezroczyste tło
+            label11.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label11.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label12.Text = "0 m";
             label12.Font = new Font("Aptos", 18, FontStyle.Bold);
             label12.Location = new Point(((panel7.Width - label12.Width - 45) / 2), 50);
             label12.TextAlign = ContentAlignment.MiddleCenter;
-            label12.ForeColor = Color.White; // Kolor czcionki na biały
-            label12.BackColor = Color.Transparent; // Przezroczyste tłos
+            label12.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label12.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
 
             cartesianChart1.Size = new Size(600, 250);
             cartesianChart1.Location = new Point(((panel.Width - cartesianChart1.Width) / 2), 90);
             cartesianChart1.Font = new Font("Aptos", 14, FontStyle.Regular);
-            cartesianChart1.BackColor = Color.Transparent;
+            cartesianChart1.BackColor = System.Drawing.Color.Transparent;
 
             cartesianChart2.Size = new Size(600, 250);
             cartesianChart2.Location = new Point(((panel6.Width - cartesianChart2.Width) / 2), 90);
             cartesianChart2.Font = new Font("Aptos", 14, FontStyle.Regular);
-            cartesianChart2.BackColor = Color.Transparent;
+            cartesianChart2.BackColor = System.Drawing.Color.Transparent;
 
             cartesianChart3.Size = new Size(600, 250);
             cartesianChart3.Location = new Point(((panel7.Width - cartesianChart3.Width) / 2), 90);
             cartesianChart3.Font = new Font("Aptos", 14, FontStyle.Regular);
-            cartesianChart3.BackColor = Color.Transparent;
+            cartesianChart3.BackColor = System.Drawing.Color.Transparent;
 
             cartesianChart1.AxisX.Add(new LiveCharts.Wpf.Axis
             {
