@@ -36,7 +36,15 @@ git clone https://github.com/AdrianPanasiewicz/GNS.git
 Launch the application from the GUI.
 Connect the ground control system to the rocket via the specified communication protocol.
 Monitor the real-time data.
-**Contributing**
+
+**Contribution**
+
+The following contributed to the project:
+1. Filip Sudak -  Front-end,
+2. Adrian Panasiewicz - Back-end,
+3. Mateusz Rowicki - USB Communication
+4. Bernard Siodłowski - LoRa communication
+
 
 We welcome contributions! Feel free to open an issue or submit a pull request.
 
