@@ -40,10 +40,10 @@ Monitor the real-time data.
 ## Contribution
 
 The following contributed to the project:
-1. Filip Sudak -  Front-end,
-2. Adrian Panasiewicz - Back-end,
-3. Mateusz Rowicki - USB Communication
-4. Bernard Siodłowski - LoRa communication
+1. Filip Sudak -  Front-end.
+2. Adrian Panasiewicz - Back-end.
+3. Mateusz Rowicki - USB Communication.
+4. Bernard Siodłowski - LoRa communication.
 
 
 We welcome contributions! Feel free to open an issue or submit a pull request.
