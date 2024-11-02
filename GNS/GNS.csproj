@@ -146,6 +146,9 @@
     <Compile Include="Back-end\DataModels\TelemetryPacket.cs" />
     <Compile Include="Back-end\DataModels\TSSData.cs" />
     <Compile Include="Back-end\DataModels\TVSData.cs" />
+    <Compile Include="Back-end\SerialCom\DataModel.cs" />
+    <Compile Include="Back-end\SerialCom\SerialReader.cs" />
+    <Compile Include="Back-end\SerialCom\TelemetryData.cs" />
     <Compile Include="Back-end\TelemetryProcessing\TelemetryProcessor.cs" />
     <Compile Include="GNS.cs">
       <SubType>Form</SubType>
