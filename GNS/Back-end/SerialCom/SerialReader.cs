@@ -5,6 +5,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Threading;
 using SerialCom.DataModel;
+using System.Collections.Concurrent;
 
 namespace SerialCom
 {
@@ -36,7 +37,13 @@ namespace SerialCom
         private List<string> _receivedTelemetry;
         public List<string> ReceivedTelemetry { get => _receivedTelemetry; }
 
-        private Thread serialThread;      
+        private Thread serialThread;
+
+        private ConcurrentQueue<TelemetryData> telemetryDataQueue;
+        
+        public delegate void DataReceivedEventHandler(object source, EventArgs e);
+
+        public event DataReceivedEventHandler DataReceived;
 
         public LoRaSerialReader() 
         {
@@ -314,6 +321,14 @@ namespace SerialCom
             }
 
             return telemetryDataList;
+        }
+
+        protected virtual void OnDataReceived()
+        {
+            if (DataReceived != null)
+            {
+                DataReceived(this, EventArgs.Empty);
+            }
         }
     }
 }

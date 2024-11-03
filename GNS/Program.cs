@@ -1,6 +1,7 @@
 ﻿using GroundControlSystem.Communication;
 using GroundControlSystem.DataModels;
 using GroundControlSystem.TelemetryProcessing;
+using SerialCom;
 using System;
 using System.IO;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace GNS
         [STAThread]
         static void Main()
         {
+            LoRaSerialReader serialReader = new LoRaSerialReader(); 
 
             // Znajdz sciezke do przestrzeni roboczej
             string workingDirectory = Environment.CurrentDirectory;
@@ -35,6 +37,9 @@ namespace GNS
             usbManager.usbReceiver.InitializeConnection();
             Console.WriteLine("Rozpoczynanie odbioru danych z USB...");
 
+            // Stworzenie watku do obslugi portu
+            Thread LoRaReader = new Thread(() => serialReader.Run());
+            LoRaReader.Name = "LoRa Serial Reader";
 
             // Stworzenie watku do obslugi back-end
             Thread BackEndThread = new Thread(() => BackEnd(processor, usbManager));
@@ -49,6 +54,7 @@ namespace GNS
             // Uruchomienie obu watkow
             GUIThread.Start();
             Thread.Sleep(5000);
+            LoRaReader.Start();
             BackEndThread.Start();
 
         }
@@ -110,6 +116,7 @@ namespace GNS
             Application.Run(new GNS());
             Environment.Exit(0);
         }
+
     }
 
 }

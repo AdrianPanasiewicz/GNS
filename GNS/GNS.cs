@@ -40,9 +40,9 @@ namespace GNS
 {
     public partial class GNS : Form
     {
-        private float pitch = 0;   // początkowa wartość pitch
-        private float roll = 0;    // początkowa wartość roll
-        private float heading = 0; // początkowa wartość heading
+        private float pitch = 0;
+        private float roll = 0;
+        private float heading = 0;
 
         private double lat = 0;
         private double lng = 0;
