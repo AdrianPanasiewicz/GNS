@@ -17,6 +17,7 @@ namespace GNS
         [STAThread]
         static void Main()
         {
+            // Stworz klase odpowiedzialna za czytanie danych z usb i zainicjalizuj ja
             LoRaSerialReader serialReader = new LoRaSerialReader();
             serialReader.Init();
 
@@ -64,27 +65,28 @@ namespace GNS
         /// 4. Przesylanie do Front- end.
         /// </summary>
         /// <param name="processor"></param>
-        /// <param name="usbManager"></param>
+        /// <param name="serialReader"></param>
         public static void BackEnd(TelemetryProcessor processor, LoRaSerialReader serialReader)
         {
+            // Uruchom klase dp czytania danych z IUSB
             serialReader.Run();
+            GNS formInstance = Application.OpenForms.OfType<GNS>().FirstOrDefault();
 
             while (true)
             {
-                GNS formInstance = Application.OpenForms.OfType<GNS>().FirstOrDefault();
-
-                // 2. Przetwórz dane do obiektu telemetrycznego
+   
+                // 1. Przetwórz dane do obiektu telemetrycznego
                 TelemetryData telemetryPacket = serialReader.ToTelemetryData();
 
-                // 3. Zapisz dane do CSV
+                // 2. Zapisz dane do CSV
                 processor.SaveToCSV(telemetryPacket);
 
-                // 4. Wyświetl dane telemetryczne w konsoli
+                // 3. Wyświetl dane telemetryczne w konsoli
                 Console.WriteLine("Dane telemetryczne:");
                 Console.WriteLine(telemetryPacket.ToString());
 
 
-                // 5. Przeslij dane telemetryczne do GUI
+                // 4. Przeslij dane telemetryczne do GUI
                 if (formInstance != null)
                 {
                     formInstance.Invoke(new Action(() =>

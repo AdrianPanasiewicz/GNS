@@ -151,7 +151,7 @@ namespace SerialCom
         {     
             Console.WriteLine("\nReceived data:\n");
 
-            Thread.Sleep(1000);
+            Thread.Sleep(100);
 
             bool skipFirstRead = true;
 
