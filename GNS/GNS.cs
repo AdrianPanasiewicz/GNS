@@ -883,6 +883,13 @@ namespace GNS
                         seriesCollection1[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.VerticalVelocity));
                         seriesCollection2[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.AccZInertial));  // Dopytac sie o ktora predkosc chodzi
                         seriesCollection3[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.Altitude));
+
+                        // Trzymaj tylko 100 najnowszych punktow na wykresie
+                        if (seriesCollection1[0].Values.Count > 100) seriesCollection1[0].Values.RemoveAt(0);
+                        if (seriesCollection2[0].Values.Count > 100) seriesCollection2[0].Values.RemoveAt(0);
+                        if (seriesCollection3[0].Values.Count > 100) seriesCollection3[0].Values.RemoveAt(0);
+
+
                         label10.Text = (telemetryPacket.Baro.VerticalVelocity).ToString() + " m/s";
                         label11.Text = (telemetryPacket.Baro.AccZInertial).ToString() + " m/s^2";
                         label12.Text = (telemetryPacket.Baro.Altitude).ToString() + " m";
@@ -913,8 +920,8 @@ namespace GNS
                     }));
                 }
 
-                // Odśwież wykres co 500 ms
-                Thread.Sleep(500);
+                // Odśwież wykres co 100 ms
+                Thread.Sleep(100);
             }
         }
 

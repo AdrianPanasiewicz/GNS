@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using SerialCom.DataModel;
 using System.Collections.Concurrent;
+using GroundControlSystem.TelemetryProcessing;
 
 namespace SerialCom
 {
@@ -169,6 +170,7 @@ namespace SerialCom
 
                     _receivedTelemetry.Add(message);
                     Console.WriteLine(message);
+                    OnDataReceived();
                 }
                 catch (TimeoutException) 
                 {
@@ -331,4 +333,5 @@ namespace SerialCom
             }
         }
     }
+
 }
