@@ -65,7 +65,7 @@ namespace GNS
             this.DoubleBuffered = true;
             this.Size = new Size(1920, 1080);
             this.BackColor = System.Drawing.Color.FromArgb(255, 20, 33, 61);
-            this.Load += new EventHandler(GNS_Load); // Dodanie zdarzenia Load
+            //this.Load += new EventHandler(GNS_Load); // Dodanie zdarzenia Load
 
             telemetryDataQueue = new ConcurrentQueue<TelemetryData>();
 
@@ -75,7 +75,13 @@ namespace GNS
 
             viewport = new HelixViewport3D();
             host.Child = viewport;
-            LoadRocketModel("C:\\Users\\fs24f\\source\\repos\\GNS\\RocketPhoto\\12217_rocket_v1_l1.obj");
+
+            // Znajdz sciezke do przestrzeni roboczej
+            string workingDirectory = Environment.CurrentDirectory;
+            string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
+            string RocketFilePath = projectDirectory + "\\GNS\\bin\\Debug\\RocketPhoto\\12217_rocket_v1_l1.obj";
+
+            LoadRocketModel(RocketFilePath);
 
             // Create and define the axis lines
             var xAxis = new LinesVisual3D
