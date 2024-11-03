@@ -1,5 +1,4 @@
 ﻿using GroundControlSystem.Communication;
-using GroundControlSystem.DataModels;
 using GroundControlSystem.TelemetryProcessing;
 using SerialCom;
 using System;
@@ -18,7 +17,8 @@ namespace GNS
         [STAThread]
         static void Main()
         {
-            LoRaSerialReader serialReader = new LoRaSerialReader(); 
+            LoRaSerialReader serialReader = new LoRaSerialReader();
+            serialReader.Init();
 
             // Znajdz sciezke do przestrzeni roboczej
             string workingDirectory = Environment.CurrentDirectory;
@@ -28,21 +28,18 @@ namespace GNS
             // Stworzenie procesora do obslugi pobieranych danych z USB
             TelemetryProcessor processor = new TelemetryProcessor(saveFilePath);
 
-            // Ustaw flagę true, aby użyć symulacji, false dla rzeczywistego USB
-            bool useSimulation = true;
+            //// Ustaw flagę true, aby użyć symulacji, false dla rzeczywistego USB
+            //bool useSimulation = true;
 
-            USBManager usbManager = new USBManager(useSimulation);
+            //USBManager usbManager = new USBManager(useSimulation);
 
-            // Inicjalizuj połączenie USB i odbierz dane
-            usbManager.usbReceiver.InitializeConnection();
-            Console.WriteLine("Rozpoczynanie odbioru danych z USB...");
+            //// Inicjalizuj połączenie USB i odbierz dane
+            //usbManager.usbReceiver.InitializeConnection();
+            //Console.WriteLine("Rozpoczynanie odbioru danych z USB...");
 
-            // Stworzenie watku do obslugi portu
-            Thread LoRaReader = new Thread(() => serialReader.Run());
-            LoRaReader.Name = "LoRa Serial Reader";
 
             // Stworzenie watku do obslugi back-end
-            Thread BackEndThread = new Thread(() => BackEnd(processor, usbManager));
+            Thread BackEndThread = new Thread(() => BackEnd(processor, serialReader));
             BackEndThread.Name = "Main thread";
 
 
@@ -54,7 +51,6 @@ namespace GNS
             // Uruchomienie obu watkow
             GUIThread.Start();
             Thread.Sleep(5000);
-            LoRaReader.Start();
             BackEndThread.Start();
 
         }
@@ -69,25 +65,23 @@ namespace GNS
         /// </summary>
         /// <param name="processor"></param>
         /// <param name="usbManager"></param>
-        public static void BackEnd(TelemetryProcessor processor, USBManager usbManager)
+        public static void BackEnd(TelemetryProcessor processor, LoRaSerialReader serialReader)
         {
+            serialReader.Run();
 
             while (true)
             {
                 GNS formInstance = Application.OpenForms.OfType<GNS>().FirstOrDefault();
 
-                // 1, Pobranie danych z USB
-                byte[] rawData = usbManager.usbReceiver.ReceiveData();
-
                 // 2. Przetwórz dane do obiektu telemetrycznego
-                TelemetryPacket telemetryPacket = processor.ProcessRawData(rawData);
+                TelemetryData telemetryPacket = serialReader.ToTelemetryData();
 
                 // 3. Zapisz dane do CSV
                 processor.SaveToCSV(telemetryPacket);
 
                 // 4. Wyświetl dane telemetryczne w konsoli
                 Console.WriteLine("Dane telemetryczne:");
-                Console.WriteLine(telemetryPacket.ToCSV());
+                Console.WriteLine(telemetryPacket.ToString());
 
 
                 // 5. Przeslij dane telemetryczne do GUI
@@ -100,7 +94,7 @@ namespace GNS
                 }
 
                 // 6. Czekaj okreslona chwile
-                Thread.Sleep(500);
+                Thread.Sleep(100);
             }
         }
 

@@ -32,17 +32,17 @@ using System.IO;
 using System.Collections.Concurrent;
 using Newtonsoft.Json.Linq;
 using System.Threading;
-using GroundControlSystem.DataModels;
 using static GMap.NET.Entity.OpenStreetMapRouteEntity;
 using System.Windows.Media;
+using SerialCom;
 
 namespace GNS
 {
     public partial class GNS : Form
     {
-        private float pitch = 0;
-        private float roll = 0;
-        private float heading = 0;
+        private double pitch = 0;
+        private double roll = 0;
+        private double heading = 0;
 
         private double lat = 0;
         private double lng = 0;
@@ -54,7 +54,7 @@ namespace GNS
         private ElementHost host;
         private HelixViewport3D viewport;
 
-        private ConcurrentQueue<TelemetryPacket> telemetryDataQueue;
+        private ConcurrentQueue<TelemetryData> telemetryDataQueue;
         private SeriesCollection seriesCollection1, seriesCollection2, seriesCollection3;
 
         private ModelVisual3D _RocketModel;
@@ -67,7 +67,7 @@ namespace GNS
             this.BackColor = System.Drawing.Color.FromArgb(255, 20, 33, 61);
             this.Load += new EventHandler(GNS_Load); // Dodanie zdarzenia Load
 
-            telemetryDataQueue = new ConcurrentQueue<TelemetryPacket>();
+            telemetryDataQueue = new ConcurrentQueue<TelemetryData>();
 
             host = new ElementHost();
             host.Size = new Size(622, 542);
@@ -870,7 +870,7 @@ namespace GNS
 
             while (true)
             {
-                if (telemetryDataQueue.TryDequeue(out TelemetryPacket telemetryPacket))
+                if (telemetryDataQueue.TryDequeue(out TelemetryData telemetryPacket))
                 {
                     // Zaktualizuj wykres w bezpieczny dla wątków sposób
                     this.Invoke(new Action(() =>
@@ -880,12 +880,12 @@ namespace GNS
                         _timestamp = (_nowDateTime - _startDateTime).TotalSeconds;
 
                         // Wyslij punkt do wykresow
-                        seriesCollection1[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.IMU.VerVel));
-                        seriesCollection2[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.IMU.VelAcc));
-                        seriesCollection3[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.GPS.AltitudeGPS));
-                        label10.Text = (telemetryPacket.IMU.VerVel).ToString() + " m/s";
-                        label11.Text = (telemetryPacket.IMU.VelAcc).ToString() + " m/s^2";
-                        label12.Text = (telemetryPacket.GPS.AltitudeGPS).ToString() + " m";
+                        seriesCollection1[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.VerticalVelocity));
+                        seriesCollection2[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.AccZInertial));  // Dopytac sie o ktora predkosc chodzi
+                        seriesCollection3[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.Altitude));
+                        label10.Text = (telemetryPacket.Baro.VerticalVelocity).ToString() + " m/s";
+                        label11.Text = (telemetryPacket.Baro.AccZInertial).ToString() + " m/s^2";
+                        label12.Text = (telemetryPacket.Baro.Altitude).ToString() + " m";
 
 
 
@@ -923,7 +923,7 @@ namespace GNS
         /// </summary>
         /// <param name="time"></param>
         /// <param name="telemetryPacket"></param>
-        public void AddTelemetryDataPoint(TelemetryPacket telemetryPacket)
+        public void AddTelemetryDataPoint(TelemetryData telemetryPacket)
         {
             telemetryDataQueue.Enqueue(telemetryPacket);
         }

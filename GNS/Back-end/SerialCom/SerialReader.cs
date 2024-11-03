@@ -38,8 +38,6 @@ namespace SerialCom
         public List<string> ReceivedTelemetry { get => _receivedTelemetry; }
 
         private Thread serialThread;
-
-        private ConcurrentQueue<TelemetryData> telemetryDataQueue;
         
         public delegate void DataReceivedEventHandler(object source, EventArgs e);
 
@@ -135,6 +133,8 @@ namespace SerialCom
                 //
                 // Na potrzeby testów
                 //
+                 
+                // OnDataReceived();
 
                 if (_receivedTelemetry.Count >= 50)
                 {
