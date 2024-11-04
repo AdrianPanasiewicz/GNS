@@ -19,8 +19,9 @@ namespace GNS
         [STAThread]
         static void Main()
         {
-            // Stworz klase odpowiedzialna za czytanie danych z usb i zainicjalizuj ja
+            // Stworz klase odpowiedzialna za czytanie danych z SerialPort i zainicjalizuj ja
             serialReader = new LoRaSerialReader();
+            serialReader.ShowPortSelection();
             serialReader.Init();
 
             // Znajdz sciezke do przestrzeni roboczej

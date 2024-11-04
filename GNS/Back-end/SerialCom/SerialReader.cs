@@ -7,6 +7,8 @@ using System.Threading;
 using SerialCom.DataModel;
 using System.Collections.Concurrent;
 using GroundControlSystem.TelemetryProcessing;
+using System.Windows.Forms;
+using System.Drawing;
 
 namespace SerialCom
 {
@@ -53,77 +55,13 @@ namespace SerialCom
 
 
         public void Init() 
-        {
-            Console.WriteLine("LoRa configuration:\n\n");
-
-            PortsConfig();
-            BaudConfig();
-
+        {       
             _serialPort.PortName = _portName;
             _serialPort.BaudRate = _baudRate;
             _serialPort.ReadTimeout = 2000;
             _serialPort.WriteTimeout = 2000;
         }
 
-        private void PortsConfig() 
-        {
-            Console.WriteLine("Available ports:\n");
-
-            string[] portArray = Array.Empty<string>();
-
-            try
-            {
-                portArray = SerialPort.GetPortNames();
-
-                if (portArray.Length == 0)
-                {
-                    Console.WriteLine("\tNo serial ports found.\n");
-                }
-                else
-                {
-                    foreach (string port in portArray)
-                    {
-                        Console.WriteLine(port + " ");
-                    }
-                }
-                Console.WriteLine();
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"\tError retrieving port names: {ex.Message}");
-            }
-
-            while (true)
-            {
-                Console.WriteLine("Enter name of selected port:\n");
-                string selectedPort = Console.ReadLine();
-
-                if (portArray.Contains(selectedPort))
-                {
-                    _portName = selectedPort;
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine("\tInvalid port name.\n\tPlease enter a port from the list or check your devices.");
-                }
-            }
-        }
-
-        private void BaudConfig() 
-        {
-            Console.WriteLine("\nEnter value of desired BaudRate:\n");
-            if (int.TryParse(Console.ReadLine(), out int baudRate))
-            {
-                _baudRate = baudRate;
-            }
-            else
-            {
-                Console.WriteLine("\nInvalid input for baud rate. Setting default value to 9600.");
-                _baudRate = 9600;
-            }
-        }
 
         public void Run() 
         {
@@ -131,17 +69,7 @@ namespace SerialCom
 
             while (_continue)
             {
-                //
-                // Na potrzeby testów
-                //
-                 
-                // OnDataReceived();
-
-                if (_receivedTelemetry.Count >= 50)
-                {
-                    _continue = false;
-                }
-                else { continue; }
+                
             }
             serialThread.Join();
             _serialPort.Close();
@@ -150,8 +78,6 @@ namespace SerialCom
 
         public void ReadPort() 
         {     
-            Console.WriteLine("\nReceived data:\n");
-
             Thread.Sleep(100);
 
             bool skipFirstRead = true;
@@ -169,12 +95,11 @@ namespace SerialCom
                     }
 
                     _receivedTelemetry.Add(message);
-                    Console.WriteLine(message);
                     OnDataReceived();
                 }
                 catch (TimeoutException) 
                 {
-                    Console.WriteLine("Error: Delay detected! No data received within the timeout period.");
+                    MessageBox.Show("No data received within the timeout period.", "Error: Delay detected!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     _continue = false;
                 }
             }
@@ -194,19 +119,19 @@ namespace SerialCom
                     serialThread.Start();
 
                     portAvailable = true;
-                    Console.WriteLine("Successfully accessed the port.");
+
+                    MessageBox.Show("SerialCom started successfully","LoRa Config", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    Console.WriteLine("Port is busy. Retrying...");
                     Thread.Sleep(1000);
                 }
             }
 
             if (!portAvailable)
             {
-                Console.WriteLine("Unable to access the port after multiple attempts.");
+                MessageBox.Show("Port is busy...\nUnable to connect after 5 attempts", "LoRa Config", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -332,6 +257,80 @@ namespace SerialCom
                 DataReceived(this, EventArgs.Empty);
             }
         }
-    }
 
+        public void ShowPortSelection()
+        {
+            Form portForm = new Form
+            {
+                Text = "LoRa Config",
+                MaximizeBox = false,
+                MinimizeBox = false,
+                ClientSize = new Size(380, 150)
+            };
+
+            Label portLabel = new Label
+            {
+                Text = "Port:",
+                Location = new Point(10, 10),
+                BackColor = Color.Transparent
+            };
+
+            ComboBox portComboBox = new ComboBox();
+            string[] availablePorts = SerialPort.GetPortNames();
+            if (availablePorts.Length == 0)
+            {
+                portComboBox.Items.Add("No serial ports found");
+                portComboBox.SelectedIndex = 0;
+                portComboBox.Enabled = false;
+            }
+            else
+            {               
+                portComboBox.Items.AddRange(availablePorts);
+                portComboBox.Enabled = true;
+            }
+            portComboBox.Location = new Point(10, 40);
+            portComboBox.Width = 150;
+
+            Label baudLabel = new Label();
+            baudLabel.Text = "Baud Rate:";
+            baudLabel.Location = new Point(200, 10);
+
+            ComboBox baudComboBox = new ComboBox();
+            baudComboBox.Items.AddRange(new object[] { 9600 });
+            baudComboBox.Location = new Point(200, 40);
+            baudComboBox.Width = 150;
+
+            Button connectButton = new Button();
+            connectButton.Text = "Connect";
+            connectButton.Location = new Point(10, 80);
+            connectButton.Click += (sender, e) =>
+            {
+                _portName = portComboBox.SelectedItem?.ToString();
+                _baudRate = int.TryParse(baudComboBox.SelectedItem?.ToString(), out int baud) ? baud : 0;
+
+                if (string.IsNullOrEmpty(_portName) || _portName == "No serial ports found")
+                {
+                    MessageBox.Show("Please select a valid serial port.", "Invalid Port", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (_baudRate <= 0)
+                {
+                    MessageBox.Show("Please select a valid baud rate.", "Invalid Baud Rate", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                portForm.Close();
+            };
+
+            portForm.Controls.Add(portLabel);
+            portForm.Controls.Add(portComboBox);
+            portForm.Controls.Add(baudLabel);
+            portForm.Controls.Add(baudComboBox);
+            portForm.Controls.Add(connectButton);
+
+            portForm.ShowDialog();
+        }
+
+    }
 }
