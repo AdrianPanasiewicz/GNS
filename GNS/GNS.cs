@@ -59,6 +59,8 @@ namespace GNS
 
         private ModelVisual3D _RocketModel;
 
+        private string _RocketFilePath;
+
         public GNS()
         {
             InitializeComponent();
@@ -79,9 +81,9 @@ namespace GNS
             // Znajdz sciezke do przestrzeni roboczej
             string workingDirectory = Environment.CurrentDirectory;
             string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
-            string RocketFilePath = projectDirectory + "\\GNS\\bin\\Debug\\RocketPhoto\\12217_rocket_v1_l1.obj";
+            this._RocketFilePath = projectDirectory + "\\GNS\\Resources\\RocketPhoto\\12217_rocket_v1_l1.obj";
 
-            LoadRocketModel(RocketFilePath);
+            LoadRocketModel();
 
             // Create and define the axis lines
             var xAxis = new LinesVisual3D
@@ -792,19 +794,17 @@ namespace GNS
 
         }
 
-        private void LoadRocketModel(string path)
+        private void LoadRocketModel()
         {
-            // Ścieżka do pliku modelu .obj
-            string modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RocketPhoto", "12217_rocket_v1_l1.obj");
 
-            if (!File.Exists(modelPath))
+            if (!File.Exists(_RocketFilePath))
             {
-                MessageBox.Show("Nie znaleziono pliku: " + modelPath);
+                MessageBox.Show("Nie znaleziono pliku: " + _RocketFilePath);
                 return;
             }
 
             var importer = new ModelImporter();
-            Model3D model = importer.Load(modelPath); // ModelImporter automatycznie załaduje plik .mtl, jeśli jest w tej samej lokalizacji i .obj na niego wskazuje
+            Model3D model = importer.Load(_RocketFilePath); // ModelImporter automatycznie załaduje plik .mtl, jeśli jest w tej samej lokalizacji i .obj na niego wskazuje
 
             // Utwórz model 3D do wyświetlenia
             _RocketModel = new ModelVisual3D { Content = model };
