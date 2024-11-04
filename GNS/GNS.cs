@@ -86,7 +86,7 @@ namespace GNS
             // Znajdz sciezke do przestrzeni roboczej
             string workingDirectory = Environment.CurrentDirectory;
             string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
-            this._RocketFilePath = projectDirectory + "\\GNS\\Resources\\RocketPhoto\\12217_rocket_v1_l1.obj";
+            this._RocketFilePath = projectDirectory + "\\GNS\\Resources\\RocketPhoto\\LIKWIDATOR_Assembly.obj";
 
             LoadRocketModel();
 

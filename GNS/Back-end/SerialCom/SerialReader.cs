@@ -9,6 +9,8 @@ using System.Collections.Concurrent;
 using GroundControlSystem.TelemetryProcessing;
 using System.Windows.Forms;
 using System.Drawing;
+using GNS;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace SerialCom
 {
@@ -39,6 +41,7 @@ namespace SerialCom
 
         private List<string> _receivedTelemetry;
         public List<string> ReceivedTelemetry { get => _receivedTelemetry; }
+        private string _partialMessage;
 
         private Thread serialThread;
         
@@ -51,8 +54,8 @@ namespace SerialCom
             serialThread = new Thread(ReadPort);
             _serialPort = new SerialPort();
             _receivedTelemetry = new List<string>();
+            _partialMessage = string.Empty;
         }
-
 
         public void Init() 
         {       
@@ -61,7 +64,6 @@ namespace SerialCom
             _serialPort.ReadTimeout = 2000;
             _serialPort.WriteTimeout = 2000;
         }
-
 
         public void Run() 
         {
@@ -76,17 +78,18 @@ namespace SerialCom
             Dispose();
         }
 
-        public void ReadPort() 
-        {     
+        public void ReadPort()
+        {
             Thread.Sleep(100);
 
             bool skipFirstRead = true;
+            string currentData = "";
 
-            while(_continue)
+            while (_continue)
             {
                 try
                 {
-                    string message = _serialPort.ReadLine();
+                    string message = _serialPort.ReadLine().Trim();
 
                     if (skipFirstRead)
                     {
@@ -94,15 +97,44 @@ namespace SerialCom
                         continue;
                     }
 
-                    _receivedTelemetry.Add(message);
-                    OnDataReceived();
+                    if (message.StartsWith("+TEST: LEN:"))
+                    {
+                        var len = message.Split(',')[0].Replace("+TEST: LEN:", "").Trim();
+                        var rssi = message.Split(',')[1].Replace("RSSI:", "").Trim();
+                        var snr = message.Split(',')[2].Replace("SNR:", "").Trim();
+
+                        currentData = $"{len};{rssi};{snr};";
+                    }
+                    else if (message.StartsWith("+TEST: RX"))
+                    {
+                        string rxData = message.Replace("+TEST: RX \"", "").TrimEnd('"');
+                        string decodedData = HexToString(rxData);
+
+                        currentData += decodedData;
+                        _receivedTelemetry.Add(currentData);
+
+                        currentData = "";
+                    }
                 }
-                catch (TimeoutException) 
+                catch (TimeoutException)
                 {
-                    MessageBox.Show("No data received within the timeout period.", "Error: Delay detected!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("No data received within the timeout period.","Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     _continue = false;
                 }
             }
+        }
+
+        private string HexToString(string hex)
+        {
+            hex = hex.Replace(" ", "");
+            var bytes = new byte[hex.Length / 2];
+
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+            }
+
+            return System.Text.Encoding.UTF8.GetString(bytes);
         }
 
         private void AttemptPortAccess()
@@ -145,109 +177,46 @@ namespace SerialCom
             if (_serialPort != null) { _serialPort.Dispose(); }
         }
 
-        public TelemetryData ToTelemetryData() 
+        public TelemetryData ToTelemetryData()
         {
-            var dataParts = _receivedTelemetry.Last().Split(';');
-
-            if (dataParts.Length == 19)
+            if (!_receivedTelemetry.Any())
             {
-                return new TelemetryData
-                {
-                    Time = new TimeData
-                    {
-                        TimeStamp = DateTime.Parse(dataParts[0])
-                    },
-                    IMU = new IMUData
-                    {
-                        AccX = double.Parse(dataParts[1], CultureInfo.InvariantCulture),
-                        AccY = double.Parse(dataParts[2], CultureInfo.InvariantCulture),
-                        AccZ = double.Parse(dataParts[3], CultureInfo.InvariantCulture),
-                        GyroX = double.Parse(dataParts[4], CultureInfo.InvariantCulture),
-                        GyroY = double.Parse(dataParts[5], CultureInfo.InvariantCulture),
-                        GyroZ = double.Parse(dataParts[6], CultureInfo.InvariantCulture),
-                        MagX = double.Parse(dataParts[7], CultureInfo.InvariantCulture),
-                        MagY = double.Parse(dataParts[8], CultureInfo.InvariantCulture),
-                        MagZ = double.Parse(dataParts[9], CultureInfo.InvariantCulture),
-                        Heading = double.Parse(dataParts[10], CultureInfo.InvariantCulture),
-                        Pitch = double.Parse(dataParts[11], CultureInfo.InvariantCulture),
-                        Roll = double.Parse(dataParts[12], CultureInfo.InvariantCulture)
-                    },
-                    Baro = new BaroData
-                    {
-                        AccZInertial = double.Parse(dataParts[13], CultureInfo.InvariantCulture),
-                        VerticalVelocity = double.Parse(dataParts[14], CultureInfo.InvariantCulture),
-                        Pressure = double.Parse(dataParts[15], CultureInfo.InvariantCulture),
-                        Altitude = double.Parse(dataParts[16], CultureInfo.InvariantCulture)
-                    },
-                    GPS = new GPSData
-                    {
-                        Latitude = double.Parse(dataParts[17], CultureInfo.InvariantCulture),
-                        Longitude = double.Parse(dataParts[18], CultureInfo.InvariantCulture)
-                    }
-                };
-            }
-            else
-            {
-                throw new ArgumentException($"Zbyt mało danych.");
-            }
-        }
-
-        public List<TelemetryData> ToTelemetryDataList()
-        {
-            var telemetryDataList = new List<TelemetryData>();
-
-            foreach (var data in _receivedTelemetry)
-            {
-                var dataParts = data.Split(';');
-
-                
-                if (dataParts.Length == 19) 
-                {
-                    var telemetryData = new TelemetryData
-                    {
-                        Time = new TimeData
-                        {
-                            TimeStamp = DateTime.Parse(dataParts[0])
-                        },
-                        IMU = new IMUData
-                        {
-                            AccX = double.Parse(dataParts[1].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            AccY = double.Parse(dataParts[2].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            AccZ = double.Parse(dataParts[3].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            GyroX = double.Parse(dataParts[4].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            GyroY = double.Parse(dataParts[5].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            GyroZ = double.Parse(dataParts[6].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            MagX = double.Parse(dataParts[7].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            MagY = double.Parse(dataParts[8].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            MagZ = double.Parse(dataParts[9].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            Heading = double.Parse(dataParts[10].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            Pitch = double.Parse(dataParts[11].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            Roll = double.Parse(dataParts[12].Replace(',', '.'), CultureInfo.InvariantCulture)
-                        },
-                        Baro = new BaroData
-                        {
-                            AccZInertial = double.Parse(dataParts[13].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            VerticalVelocity = double.Parse(dataParts[14].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            Pressure = double.Parse(dataParts[15].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            Altitude = double.Parse(dataParts[16].Replace(',', '.'), CultureInfo.InvariantCulture)
-                        },
-                        GPS = new GPSData
-                        {
-                            Latitude = double.Parse(dataParts[17].Replace(',', '.'), CultureInfo.InvariantCulture),
-                            Longitude = double.Parse(dataParts[18].Replace(',', '.'), CultureInfo.InvariantCulture)
-                        }
-                    };
-
-                    telemetryDataList.Add(telemetryData);
-                }
-                else
-                {
-                    
-                    throw new ArgumentException($"Zbyt mało danych w: {data}");
-                }
+                throw new InvalidOperationException("No telemetry data available.");
             }
 
-            return telemetryDataList;
+            string lastMessage = _receivedTelemetry.Last();
+            var telemetryData = new TelemetryData();
+
+            var dataParts = lastMessage.Split(';');
+
+            telemetryData.LoRa.MsgLength = double.Parse(dataParts[0], CultureInfo.InvariantCulture);
+            telemetryData.LoRa.RSSI = double.Parse(dataParts[1], CultureInfo.InvariantCulture);
+            telemetryData.LoRa.SNR = double.Parse(dataParts[2], CultureInfo.InvariantCulture);
+
+            telemetryData.Time.TimeStamp = DateTime.ParseExact(dataParts[3], "H:mm:ss", CultureInfo.InvariantCulture);
+
+            telemetryData.IMU.AccX = double.Parse(dataParts[4], CultureInfo.InvariantCulture);
+            telemetryData.IMU.AccY = double.Parse(dataParts[5], CultureInfo.InvariantCulture);
+            telemetryData.IMU.AccZ = double.Parse(dataParts[6], CultureInfo.InvariantCulture);
+            telemetryData.IMU.GyroX = double.Parse(dataParts[7], CultureInfo.InvariantCulture);
+            telemetryData.IMU.GyroY = double.Parse(dataParts[8], CultureInfo.InvariantCulture);
+            telemetryData.IMU.GyroZ = double.Parse(dataParts[9], CultureInfo.InvariantCulture);
+            telemetryData.IMU.MagX = double.Parse(dataParts[10], CultureInfo.InvariantCulture);
+            telemetryData.IMU.MagY = double.Parse(dataParts[11], CultureInfo.InvariantCulture);
+            telemetryData.IMU.MagZ = double.Parse(dataParts[12], CultureInfo.InvariantCulture);
+            telemetryData.IMU.Heading = double.Parse(dataParts[13], CultureInfo.InvariantCulture);
+            telemetryData.IMU.Pitch = double.Parse(dataParts[14], CultureInfo.InvariantCulture);
+            telemetryData.IMU.Roll = double.Parse(dataParts[15], CultureInfo.InvariantCulture);
+
+            telemetryData.Baro.AccZInertial = double.Parse(dataParts[16], CultureInfo.InvariantCulture);
+            telemetryData.Baro.VerticalVelocity = double.Parse(dataParts[17], CultureInfo.InvariantCulture);
+            telemetryData.Baro.Pressure = double.Parse(dataParts[18], CultureInfo.InvariantCulture);
+            telemetryData.Baro.Altitude = double.Parse(dataParts[19], CultureInfo.InvariantCulture);
+
+            telemetryData.GPS.Latitude = double.Parse(dataParts[20], CultureInfo.InvariantCulture);
+            telemetryData.GPS.Longitude = double.Parse(dataParts[21], CultureInfo.InvariantCulture);
+
+            return telemetryData;
         }
 
         protected virtual void OnDataReceived()
@@ -331,6 +300,5 @@ namespace SerialCom
 
             portForm.ShowDialog();
         }
-
     }
 }
