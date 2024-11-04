@@ -47,6 +47,11 @@ namespace GNS
         private double lat = 0;
         private double lng = 0;
 
+        private double minLat = 0;
+        private double secLat = 0;
+        private double minLng = 0;
+        private double secLng = 0;
+
         private GameWindow gameWindow;
 
         private GMapControl gMapControl;
@@ -291,8 +296,6 @@ namespace GNS
             // Ustawienia GMapControl
             gMapControl.MapProvider = GMapProviders.GoogleMap; // Możesz zmienić na inny dostawca
             GMaps.Instance.Mode = AccessMode.ServerAndCache; // Używamy trybu serwerowego i pamięci podręcznej
-            double lat = 52.2297;
-            double lng = 21.0122;
             gMapControl.Position = new PointLatLng(lat, lng); // Ustawienie pozycji (Warszawa)
             gMapControl.MinZoom = 5;
             gMapControl.MaxZoom = 100;
@@ -552,14 +555,14 @@ namespace GNS
             label7.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label7.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
-            label8.Text = "52°13'47.17\"N";
+            label8.Text = $"{(int)lat}°{minLat}'{secLat}\" N";
             label8.Font = new Font("Aptos", 18, FontStyle.Bold);
             label8.Location = new Point((panel4.Width - label8.Width) / 2, 80);
             label8.TextAlign = ContentAlignment.MiddleCenter;
             label8.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label8.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
-            label9.Text = "21°0'42.41\"E";
+            label9.Text = $"{(int)lng}°{minLng}'{secLng}\" E";
             label9.Font = new Font("Aptos", 18, FontStyle.Bold);
             label9.Location = new Point((panel2.Width - label9.Width) / 2, 80);
             label9.TextAlign = ContentAlignment.MiddleCenter;
@@ -881,47 +884,53 @@ namespace GNS
                     // Zaktualizuj wykres w bezpieczny dla wątków sposób
                     this.Invoke(new Action(() =>
                     {
-                        // Oblicz timestamp od uruchomienie programu
-                        _nowDateTime = DateTime.Now;
-                        _timestamp = (_nowDateTime - _startDateTime).TotalSeconds;
+                    // Oblicz timestamp od uruchomienie programu
+                    _nowDateTime = DateTime.Now;
+                    _timestamp = (_nowDateTime - _startDateTime).TotalSeconds;
 
-                        // Wyslij punkt do wykresow
-                        seriesCollection1[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.VerticalVelocity));
-                        seriesCollection2[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.AccZInertial));  // Dopytac sie o ktora predkosc chodzi
-                        seriesCollection3[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.Altitude));
+                    // Wyslij punkt do wykresow
+                    seriesCollection1[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.VerticalVelocity));
+                    seriesCollection2[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.AccZInertial));  // Dopytac sie o ktora predkosc chodzi
+                    seriesCollection3[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.Altitude));
 
-                        // Trzymaj tylko 100 najnowszych punktow na wykresie
-                        if (seriesCollection1[0].Values.Count > 100) seriesCollection1[0].Values.RemoveAt(0);
-                        if (seriesCollection2[0].Values.Count > 100) seriesCollection2[0].Values.RemoveAt(0);
-                        if (seriesCollection3[0].Values.Count > 100) seriesCollection3[0].Values.RemoveAt(0);
+                    // Trzymaj tylko 100 najnowszych punktow na wykresie
+                    if (seriesCollection1[0].Values.Count > 100) seriesCollection1[0].Values.RemoveAt(0);
+                    if (seriesCollection2[0].Values.Count > 100) seriesCollection2[0].Values.RemoveAt(0);
+                    if (seriesCollection3[0].Values.Count > 100) seriesCollection3[0].Values.RemoveAt(0);
+
+                    // Wyswietlenie aktualnej wartosci wysokosci, predkosci i przyspieszczenia wertykalnego
+                    label10.Text = (telemetryPacket.Baro.VerticalVelocity).ToString() + " m/s";
+                    label11.Text = (telemetryPacket.Baro.AccZInertial).ToString() + " m/s^2";
+                    label12.Text = (telemetryPacket.Baro.Altitude).ToString() + " m";
+
+                    // Zakutalizuj wartosci obrotu rakiety
+                    pitch = telemetryPacket.IMU.Pitch;
+                    roll = telemetryPacket.IMU.Roll;
+                    heading = telemetryPacket.IMU.Heading;
 
 
-                        label10.Text = (telemetryPacket.Baro.VerticalVelocity).ToString() + " m/s";
-                        label11.Text = (telemetryPacket.Baro.AccZInertial).ToString() + " m/s^2";
-                        label12.Text = (telemetryPacket.Baro.Altitude).ToString() + " m";
+                    // Wyswietl wartosci obrotu rakiety na GUI
+                    label18.Text = $"{(int)pitch}°";
+                    label19.Text = $"{(int)roll}°";
+                    label20.Text = $"{(int)heading}°";
 
+                    // Przemieszczenie pineski na aktualne wspolrzedne geograficzne
+                    lat = telemetryPacket.GPS.Latitude;
+                    lng = telemetryPacket.GPS.Longitude;
+                    gMapControl.Position = new PointLatLng(lat, lng);
 
+                    // Oblicz sekundy i minuty nowych wspolrzednych geograficznych
+                    minLat = (int)((lat - (int)lat) * 60);
+                    secLat = Math.Round((((lat - (int)lat) * 60) - minLat) * 60);
 
-                        // Zakutalizuj wartosci obrotu rakiety
-                        pitch = telemetryPacket.IMU.Pitch;
-                        roll = telemetryPacket.IMU.Roll;
-                        heading = telemetryPacket.IMU.Heading;
+                    minLng = (int)((lng - (int)lng) * 60);
+                    secLng = Math.Round((((lng - (int)lng) * 60) - minLng) * 60);
 
-                        // Change
-                        // Wyswietl wartosci obrotu rakiety na GUI
-                        label18.Text = $"{(int)pitch}°";
-                        label19.Text = $"{(int)roll}°";
-                        label20.Text = $"{(int)heading}°";
+                    // Zaktutalizuj labels
+                    label8.Text = $"{(int)lat}°{minLat}'{secLat}\" N";
+                    label9.Text = $"{(int)lng}°{minLng}'{secLng}\" E";
 
-                        //lat = telemetryPacket.GPS.Latitude;
-                        //lng = telemetryPacket.GPS.Longitude;
-                        //gMapControl.Position = new PointLatLng(lat, lng); // Ustawienie pozycji (Warszawa)
-
-                        // Przeslij nowe wspolrzedne #TODO 
-                        //label8.Text = telemetryPacket.GPS.Latitude + "° N";
-                        //label9.Text = telemetryPacket.GPS.Longitude + "° E";
-
-                        UpdateRocketOrientation();
+                    UpdateRocketOrientation();
 
                     }));
                 }
