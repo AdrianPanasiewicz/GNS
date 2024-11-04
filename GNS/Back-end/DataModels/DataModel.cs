@@ -2,6 +2,13 @@
 
 namespace SerialCom.DataModel
 {
+
+    public class LoRaData 
+    {
+        public double MsgLength { get; set; }
+        public double RSSI { get; set; }
+        public double SNR { get; set; }
+    }
     public class TimeData
     {
          public DateTime TimeStamp { get; set; }

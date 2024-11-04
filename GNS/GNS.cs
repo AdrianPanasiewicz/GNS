@@ -81,7 +81,7 @@ namespace GNS
             // Znajdz sciezke do przestrzeni roboczej
             string workingDirectory = Environment.CurrentDirectory;
             string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
-            this._RocketFilePath = projectDirectory + "\\GNS\\Resources\\RocketPhoto\\12217_rocket_v1_l1.obj";
+            this._RocketFilePath = projectDirectory + "\\GNS\\Resources\\RocketPhoto\\LIKWIDATOR_Assembly.obj";
 
             LoadRocketModel();
 
@@ -913,13 +913,13 @@ namespace GNS
                         label19.Text = $"{(int)roll}°";
                         label20.Text = $"{(int)heading}°";
 
-                        //lat = telemetryPacket.GPS.Latitude;
-                        //lng = telemetryPacket.GPS.Longitude;
-                        //gMapControl.Position = new PointLatLng(lat, lng); // Ustawienie pozycji (Warszawa)
+                        lat = telemetryPacket.GPS.Latitude;
+                        lng = telemetryPacket.GPS.Longitude;
+                        gMapControl.Position = new PointLatLng(lat, lng); // Ustawienie pozycji (Warszawa)
 
                         // Przeslij nowe wspolrzedne #TODO 
-                        //label8.Text = telemetryPacket.GPS.Latitude + "° N";
-                        //label9.Text = telemetryPacket.GPS.Longitude + "° E";
+                        label8.Text = telemetryPacket.GPS.Latitude + "° N";
+                        label9.Text = telemetryPacket.GPS.Longitude + "° E";
 
                         UpdateRocketOrientation();
 
