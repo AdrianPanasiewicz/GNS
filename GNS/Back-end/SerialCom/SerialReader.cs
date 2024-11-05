@@ -113,6 +113,8 @@ namespace SerialCom
                         currentData += decodedData;
                         _receivedTelemetry.Add(currentData);
 
+                        OnDataReceived();
+
                         currentData = "";
                     }
                 }
