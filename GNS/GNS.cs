@@ -162,8 +162,8 @@ namespace GNS
 
             Panel panel2 = new Panel
             {
-                Size = new Size(305, 130),
-                Location = new Point(1605, 860),
+                Size = new Size(305, 100),
+                Location = new Point(1605, 780),
                 //Dock = DockStyle.Fill,
                 AutoScroll = true,
                 BackColor = System.Drawing.Color.Transparent,
@@ -263,7 +263,7 @@ namespace GNS
 
             Panel panel3 = new Panel
             {
-                Size = new Size(620, 480),
+                Size = new Size(620, 400),
                 Location = new Point(1290, 370),
                 //Dock = DockStyle.Fill,
                 AutoScroll = true,
@@ -289,7 +289,7 @@ namespace GNS
 
             gMapControl = new GMapControl
             {
-                Size = new Size(612, 472),
+                Size = new Size(612, 392),
                 Location = new Point(4, 4),
                 //Dock = DockStyle.Fill // Wypełni cały formularz
             };
@@ -323,8 +323,8 @@ namespace GNS
 
             Panel panel4 = new Panel
             {
-                Size = new Size(305, 130),
-                Location = new Point(1290, 860),
+                Size = new Size(305, 100),
+                Location = new Point(1290, 780),
                 AutoScroll = true,
                 BackColor = System.Drawing.Color.Transparent,
             };
@@ -521,6 +521,65 @@ namespace GNS
             panel10.Controls.Add(label20);
             this.Controls.Add(panel10);
 
+
+            Panel panel11 = new Panel
+            {
+                Size = new Size(305, 100),
+                Location = new Point(1290, 890),
+                AutoScroll = true,
+                BackColor = System.Drawing.Color.Transparent,
+            };
+
+            panel11.Paint += (sender, e) =>
+            {
+                // Prostokąt panelu
+                Rectangle rect = panel11.ClientRectangle;
+
+                // Zmniejsz rozmiar prostokąta o 1 piksel, aby upewnić się, że obramowanie będzie rysowane wewnątrz krawędzi
+                rect.Inflate(-1, -1);
+
+                // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
+                ControlPaint.DrawBorder(e.Graphics, panel11.ClientRectangle,
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+            };
+
+            panel11.Controls.Add(label13);
+            panel11.Controls.Add(label4);
+            this.Controls.Add(panel11);
+
+
+            Panel panel12 = new Panel
+            {
+                Size = new Size(305, 100),
+                Location = new Point(1605, 890),
+                AutoScroll = true,
+                BackColor = System.Drawing.Color.Transparent,
+            };
+
+            panel12.Paint += (sender, e) =>
+            {
+                // Prostokąt panelu
+                Rectangle rect = panel12.ClientRectangle;
+
+                // Zmniejsz rozmiar prostokąta o 1 piksel, aby upewnić się, że obramowanie będzie rysowane wewnątrz krawędzi
+                rect.Inflate(-1, -1);
+
+                // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
+                ControlPaint.DrawBorder(e.Graphics, panel12.ClientRectangle,
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+            };
+
+            panel12.Controls.Add(label14);
+            panel12.Controls.Add(label5);
+            this.Controls.Add(panel12);
+
+
             label1.Text = "Vertical velocity";
             label1.Font = new Font("Aptos", 24, FontStyle.Bold);
             label1.Location = new Point((panel.Width - label1.Width) / 2, 10);
@@ -542,54 +601,84 @@ namespace GNS
             label3.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label3.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
+            label4.Text = "RSSI";
+            label4.Font = new Font("Aptos", 28, FontStyle.Bold);
+            label4.Location = new Point(((panel11.Width - label4.Width) / 2), 10);
+            label4.TextAlign = ContentAlignment.MiddleCenter;
+            label4.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label4.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
+
+            label5.Text = "SNR";
+            label5.Font = new Font("Aptos", 28, FontStyle.Bold);
+            label5.Location = new Point(((panel12.Width - label5.Width) / 2), 10);
+            label5.TextAlign = ContentAlignment.MiddleCenter;
+            label5.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label5.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
+
             label6.Text = "Latitude";
             label6.Font = new Font("Aptos", 28, FontStyle.Bold);
-            label6.Location = new Point((panel4.Width - label6.Width) / 2, 20);
+            label6.Location = new Point((panel4.Width - label6.Width) / 2, 10);
             label6.TextAlign = ContentAlignment.MiddleCenter;
             label6.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label6.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label7.Text = "Longitude";
             label7.Font = new Font("Aptos", 28, FontStyle.Bold);
-            label7.Location = new Point((panel2.Width - label7.Width) / 2, 20);
+            label7.Location = new Point((panel2.Width - label7.Width) / 2, 10);
             label7.TextAlign = ContentAlignment.MiddleCenter;
             label7.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label7.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label8.Text = $"{(int)lat}°{minLat}'{secLat}\" N";
             label8.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label8.Location = new Point((panel4.Width - label8.Width) / 2, 80);
+            label8.Location = new Point((panel4.Width - label8.Width) / 2, 60);
             label8.TextAlign = ContentAlignment.MiddleCenter;
             label8.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label8.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label9.Text = $"{(int)lng}°{minLng}'{secLng}\" E";
             label9.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label9.Location = new Point((panel2.Width - label9.Width) / 2, 80);
+            label9.Location = new Point((panel2.Width - label9.Width) / 2, 60);
             label9.TextAlign = ContentAlignment.MiddleCenter;
             label9.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label9.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label10.Text = "0 m/s";
             label10.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label10.Location = new Point(((panel.Width - label10.Width - 45) / 2), 50);
+            label10.Location = new Point(((panel.Width - label10.Width) / 2), 50);
             label10.TextAlign = ContentAlignment.MiddleCenter;
             label10.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label10.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label11.Text = "0 m/s^2";
             label11.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label11.Location = new Point(((panel6.Width - label11.Width - 45) / 2), 50);
+            label11.Location = new Point(((panel6.Width - label11.Width) / 2), 50);
             label11.TextAlign = ContentAlignment.MiddleCenter;
             label11.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label11.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label12.Text = "0 m";
             label12.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label12.Location = new Point(((panel7.Width - label12.Width - 45) / 2), 50);
+            label12.Location = new Point(((panel7.Width - label12.Width) / 2), 50);
             label12.TextAlign = ContentAlignment.MiddleCenter;
             label12.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label12.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
+
+            label13.Text = "0";
+            label13.Font = new Font("Aptos", 18, FontStyle.Bold);
+            label13.Location = new Point(((panel11.Width - label13.Width) / 2), 57);
+            label13.TextAlign = ContentAlignment.MiddleCenter;
+            label13.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label13.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
+
+            label14.Text = "0";
+            label14.Font = new Font("Aptos", 18, FontStyle.Bold);
+            label14.Location = new Point(((panel12.Width - label14.Width) / 2), 57);
+            label14.TextAlign = ContentAlignment.MiddleCenter;
+            label14.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label14.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
+
+
 
             cartesianChart1.Size = new Size(600, 250);
             cartesianChart1.Location = new Point(((panel.Width - cartesianChart1.Width) / 2), 90);
@@ -858,6 +947,8 @@ namespace GNS
             var d = R * c;
             return d * 1000; // meters
         }
+
+
 
         /// <summary>
         /// Funkcja do regularnej aktualizacji wykresu
