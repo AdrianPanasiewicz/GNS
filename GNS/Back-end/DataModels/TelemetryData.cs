@@ -46,8 +46,7 @@ namespace SerialCom
                 IMU.Heading, IMU.Pitch, IMU.Roll,
                 Baro.AccZInertial, Baro.VerticalVelocity,
                 Baro.Pressure, Baro.Altitude,
-                GPS.Latitude, GPS.Longitude,
-                LoRa.RSSI, LoRa.SNR
+                GPS.Latitude, GPS.Longitude
             );
         }
     }

@@ -14,7 +14,8 @@ namespace GroundControlSystem.TelemetryProcessing
     /// </summary>
     public class TelemetryProcessor
     {
-        private readonly string _saveFilePath;
+        private string _saveFilePath;
+        private bool _NewLaunchFlag;
 
         /// <summary>
         /// Konstruktor inicjalizujący procesor telemetryczny.
@@ -23,53 +24,111 @@ namespace GroundControlSystem.TelemetryProcessing
         public TelemetryProcessor(string saveFilePath)
         {
             _saveFilePath = saveFilePath;
+            _NewLaunchFlag = true;
         }
 
 
         /// <summary>
-        /// Zapisuje dane telemetryczne do pliku CSV. Zalecane jest przeniesc plik CSV z folder Data, aby nie mieszac danych.
+        /// Zapisuje dane telemetryczne do pliku CSV. Jeśli plik o tej samej nazwie już istnieje,
+        /// tworzy nowy plik o tej samej nazwie z dodatkiem (n), gdzie n to liczba plików o tej nazwie w folderze.
         /// </summary>
         /// <param name="packet">Pakiet telemetryczny do zapisania.</param>
         public void SaveToCSV(TelemetryData packet)
         {
-            var records = new List<TelemetryData>
-            {
-                packet,
-            };
+            var records = new List<TelemetryData> { packet };
 
-            string csvLine = packet.ToCSV();
+            // Sprawdzamy czy plik o podanej ścieżce już istnieje, jeśli tak, tworzymy unikalną nazwę
+            string filePath = _saveFilePath;
+            int fileCounter = 1;
 
-            try
+            // Tylko jeśli _NewLaunchFlag jest ustawiony na true
+            if (_NewLaunchFlag)
             {
-                if (!File.Exists(_saveFilePath))
+                while (File.Exists(filePath))
                 {
-                    using (File.Create(_saveFilePath)) { }
+                    // Dodanie numeracji do nazwy pliku
+                    string directory = Path.GetDirectoryName(_saveFilePath);
+                    string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(_saveFilePath);
+                    string extension = Path.GetExtension(_saveFilePath);
+                    filePath = Path.Combine(directory, $"{fileNameWithoutExtension}({fileCounter}){extension}");
+                    fileCounter++;
+                }
 
-                    var WhileCreatingConfigPersons = new CsvConfiguration(CultureInfo.InvariantCulture)
-                    { HasHeaderRecord = true };
+                // Ustaw flagę na false po utworzeniu pliku
+                _NewLaunchFlag = false;
+                _saveFilePath = filePath; // Zaktualizuj ścieżkę pliku
 
-                    using (StreamWriter streamWriter = new StreamWriter(_saveFilePath))
-                    using (CsvWriter csvWriter = new CsvWriter(streamWriter, WhileCreatingConfigPersons))
+                try
+                {
+                    // Konfiguracja do zapisu nagłówków
+                    var csvConfigWithHeader = new CsvConfiguration(CultureInfo.InvariantCulture)
                     {
+                        HasHeaderRecord = true
+                    };
+
+                    using (StreamWriter streamWriter = new StreamWriter(filePath))
+                    using (CsvWriter csvWriter = new CsvWriter(streamWriter, csvConfigWithHeader))
+                    {
+                        // Zapisujemy nagłówki - dostosuj według swoich zmiennych
+                        csvWriter.WriteField("MsgLength");
+                        csvWriter.WriteField("RSSI");
+                        csvWriter.WriteField("SNR");
+                        csvWriter.WriteField("TimeStamp");
+                        csvWriter.WriteField("AccX");
+                        csvWriter.WriteField("AccY");
+                        csvWriter.WriteField("AccZ");
+                        csvWriter.WriteField("GyroX");
+                        csvWriter.WriteField("GyroY");
+                        csvWriter.WriteField("GyroZ");
+                        csvWriter.WriteField("MagX");
+                        csvWriter.WriteField("MagY");
+                        csvWriter.WriteField("MagZ");
+                        csvWriter.WriteField("Heading");
+                        csvWriter.WriteField("Pitch");
+                        csvWriter.WriteField("Roll");
+                        csvWriter.WriteField("Baro_AccZInertial");
+                        csvWriter.WriteField("VerticalVelocity");
+                        csvWriter.WriteField("Pressure");
+                        csvWriter.WriteField("Altitude");
+                        csvWriter.WriteField("Latitude");
+                        csvWriter.WriteField("Longitude");
+                        csvWriter.NextRecord(); // Przechodzimy do następnego rekordu
+
+                        // Zapisujemy rekordy z nagłówkami
                         csvWriter.WriteRecords(records);
                     }
+
+                    Console.WriteLine($"Dane zapisane do nowego pliku CSV: {filePath}");
                 }
-
-                var configPersons = new CsvConfiguration(CultureInfo.InvariantCulture)
-                {  HasHeaderRecord = false };
-
-                using (StreamWriter streamWriter = new StreamWriter(_saveFilePath, true))
-                using (CsvWriter csvWriter = new CsvWriter(streamWriter, configPersons))
+                catch (Exception ex)
                 {
-                    csvWriter.WriteRecords(records);
+                    Console.WriteLine($"Błąd podczas zapisu do pliku CSV: {ex.Message}");
                 }
-
-                Console.WriteLine("Data written to CSV successfully.");
-
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"Błąd podczas zapisu do pliku CSV: {ex.Message}");
+                // Jeśli plik nie został utworzony w nowym uruchomieniu, dodajemy do istniejącego pliku
+                try
+                {
+                    // Sprawdzamy, czy plik istnieje przed dodaniem rekordów
+                    var csvConfigWithoutHeader = new CsvConfiguration(CultureInfo.InvariantCulture)
+                    {
+                        HasHeaderRecord = false
+                    };
+
+                    using (StreamWriter streamWriter = new StreamWriter(filePath, append: true))
+                    using (CsvWriter csvWriter = new CsvWriter(streamWriter, csvConfigWithoutHeader))
+                    {
+                        // Zapisujemy rekordy bez nagłówków
+                        csvWriter.WriteRecords(records);
+                    }
+
+                    Console.WriteLine($"Dane dopisane do istniejącego pliku CSV: {filePath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Błąd podczas zapisu do pliku CSV: {ex.Message}");
+                }
             }
         }
 
