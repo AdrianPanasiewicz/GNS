@@ -64,15 +64,8 @@ namespace GNS
         /// <param name="serialReader"></param>
         public static void BackEnd(TelemetryProcessor processor, LoRaSerialReader serialReader)
         {
-<<<<<<< Updated upstream
             serialReader.DataReceived += Program.OnDataReceived;
             serialReader.Run();
-=======
-            // Uruchom klase dp czytania danych z IUSB
-            serialReader.Run();
-            GNS formInstance = Application.OpenForms.OfType<GNS>().FirstOrDefault();
-            //serialReader.DataReceived += Program.OnDataReceived;
->>>>>>> Stashed changes
 
         }
 

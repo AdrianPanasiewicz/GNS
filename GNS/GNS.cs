@@ -665,16 +665,16 @@ namespace GNS
             label12.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label12.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
 
-            label13.Text = "0";
+            label13.Text = "0 dBm";
             label13.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label13.Location = new Point(((panel11.Width - label13.Width) / 2), 57);
+            label13.Location = new Point(((panel11.Width - label13.Width) / 2), 60);
             label13.TextAlign = ContentAlignment.MiddleCenter;
             label13.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label13.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
 
-            label14.Text = "0";
+            label14.Text = "0 dB";
             label14.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label14.Location = new Point(((panel12.Width - label14.Width) / 2), 57);
+            label14.Location = new Point(((panel12.Width - label14.Width) / 2), 60);
             label14.TextAlign = ContentAlignment.MiddleCenter;
             label14.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label14.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
@@ -1062,6 +1062,10 @@ namespace GNS
                     // Zaktutalizuj labels
                     label8.Text = $"{(int)lat}°{minLat}'{secLat}\" N";
                     label9.Text = $"{(int)lng}°{minLng}'{secLng}\" E";
+
+                    // Wyswietlenie danych odnosnie mocy sygnalu
+                    label13.Text = $"{telemetryPacket.LoRa.RSSI} dBm";
+                    label14.Text = $"{telemetryPacket.LoRa.SNR} dB";
 
                     // Obliczenie wspolrzednych do wizualizacji trajektorii rakiety
                     double xPos = DistanceBetweenCoords(xPoxOrgin,lng, lat, lng);
