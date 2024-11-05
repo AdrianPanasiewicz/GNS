@@ -32,6 +32,7 @@ namespace GNS
             // Stworzenie procesora do obslugi pobieranych danych z USB
             processor = new TelemetryProcessor(saveFilePath);
 
+            serialReader.DataReceived += Program.OnDataReceived;
 
             // Stworzenie watku do obslugi back-end
             Thread BackEndThread = new Thread(() => BackEnd(processor, serialReader));
@@ -46,7 +47,7 @@ namespace GNS
 
             // Uruchomienie obu watkow
             GUIThread.Start();
-            Thread.Sleep(10000);
+            Thread.Sleep(7000);
             BackEndThread.Start();
 
         }
@@ -63,8 +64,15 @@ namespace GNS
         /// <param name="serialReader"></param>
         public static void BackEnd(TelemetryProcessor processor, LoRaSerialReader serialReader)
         {
+<<<<<<< Updated upstream
             serialReader.DataReceived += Program.OnDataReceived;
             serialReader.Run();
+=======
+            // Uruchom klase dp czytania danych z IUSB
+            serialReader.Run();
+            GNS formInstance = Application.OpenForms.OfType<GNS>().FirstOrDefault();
+            //serialReader.DataReceived += Program.OnDataReceived;
+>>>>>>> Stashed changes
 
         }
 
@@ -75,9 +83,11 @@ namespace GNS
         /// </summary>
         public static void GUI()
         {
+            
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new GNS());
+            formInstance = new GNS();
+            Application.Run(formInstance);
             Environment.Exit(0);
         }
 

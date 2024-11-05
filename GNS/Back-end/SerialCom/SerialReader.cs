@@ -116,6 +116,7 @@ namespace SerialCom
                         OnDataReceived();
 
                         currentData = "";
+                        OnDataReceived();
                     }
                 }
                 catch (TimeoutException)
@@ -157,7 +158,7 @@ namespace SerialCom
                     MessageBox.Show("SerialCom started successfully","LoRa Config", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
                 }
-                catch (UnauthorizedAccessException)
+                catch (Exception)
                 {
                     Thread.Sleep(1000);
                 }
@@ -191,35 +192,42 @@ namespace SerialCom
 
             var dataParts = lastMessage.Split(';');
 
-            telemetryData.LoRa.MsgLength = double.Parse(dataParts[0], CultureInfo.InvariantCulture);
-            telemetryData.LoRa.RSSI = double.Parse(dataParts[1], CultureInfo.InvariantCulture);
-            telemetryData.LoRa.SNR = double.Parse(dataParts[2], CultureInfo.InvariantCulture);
+            // Upewnij się, że mamy wystarczającą liczbę elementów, zanim próbujemy przypisać wartości
+            telemetryData.LoRa.MsgLength = dataParts.Length > 0 ? ParseDoubleSafe(dataParts[0]) : 0.0;
+            telemetryData.LoRa.RSSI = dataParts.Length > 1 ? ParseDoubleSafe(dataParts[1]) : 0.0;
+            telemetryData.LoRa.SNR = dataParts.Length > 2 ? ParseDoubleSafe(dataParts[2]) : 0.0;
+            telemetryData.Time.TimeStamp = dataParts.Length > 3 && DateTime.TryParseExact(dataParts[3], "H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var timestamp) ? timestamp : DateTime.MinValue;
 
-            telemetryData.Time.TimeStamp = DateTime.ParseExact(dataParts[3], "H:mm:ss", CultureInfo.InvariantCulture);
+            telemetryData.IMU.AccX = dataParts.Length > 4 ? ParseDoubleSafe(dataParts[4]) : 0.0;
+            telemetryData.IMU.AccY = dataParts.Length > 5 ? ParseDoubleSafe(dataParts[5]) : 0.0;
+            telemetryData.IMU.AccZ = dataParts.Length > 6 ? ParseDoubleSafe(dataParts[6]) : 0.0;
+            telemetryData.IMU.GyroX = dataParts.Length > 7 ? ParseDoubleSafe(dataParts[7]) : 0.0;
+            telemetryData.IMU.GyroY = dataParts.Length > 8 ? ParseDoubleSafe(dataParts[8]) : 0.0;
+            telemetryData.IMU.GyroZ = dataParts.Length > 9 ? ParseDoubleSafe(dataParts[9]) : 0.0;
+            telemetryData.IMU.MagX = dataParts.Length > 10 ? ParseDoubleSafe(dataParts[10]) : 0.0;
+            telemetryData.IMU.MagY = dataParts.Length > 11 ? ParseDoubleSafe(dataParts[11]) : 0.0;
+            telemetryData.IMU.MagZ = dataParts.Length > 12 ? ParseDoubleSafe(dataParts[12]) : 0.0;
+            telemetryData.IMU.Heading = dataParts.Length > 13 ? ParseDoubleSafe(dataParts[13]) : 0.0;
+            telemetryData.IMU.Pitch = dataParts.Length > 14 ? ParseDoubleSafe(dataParts[14]) : 0.0;
+            telemetryData.IMU.Roll = dataParts.Length > 15 ? ParseDoubleSafe(dataParts[15]) : 0.0;
 
-            telemetryData.IMU.AccX = double.Parse(dataParts[4], CultureInfo.InvariantCulture);
-            telemetryData.IMU.AccY = double.Parse(dataParts[5], CultureInfo.InvariantCulture);
-            telemetryData.IMU.AccZ = double.Parse(dataParts[6], CultureInfo.InvariantCulture);
-            telemetryData.IMU.GyroX = double.Parse(dataParts[7], CultureInfo.InvariantCulture);
-            telemetryData.IMU.GyroY = double.Parse(dataParts[8], CultureInfo.InvariantCulture);
-            telemetryData.IMU.GyroZ = double.Parse(dataParts[9], CultureInfo.InvariantCulture);
-            telemetryData.IMU.MagX = double.Parse(dataParts[10], CultureInfo.InvariantCulture);
-            telemetryData.IMU.MagY = double.Parse(dataParts[11], CultureInfo.InvariantCulture);
-            telemetryData.IMU.MagZ = double.Parse(dataParts[12], CultureInfo.InvariantCulture);
-            telemetryData.IMU.Heading = double.Parse(dataParts[13], CultureInfo.InvariantCulture);
-            telemetryData.IMU.Pitch = double.Parse(dataParts[14], CultureInfo.InvariantCulture);
-            telemetryData.IMU.Roll = double.Parse(dataParts[15], CultureInfo.InvariantCulture);
+            telemetryData.Baro.AccZInertial = dataParts.Length > 16 ? ParseDoubleSafe(dataParts[16]) : 0.0;
+            telemetryData.Baro.VerticalVelocity = dataParts.Length > 17 ? ParseDoubleSafe(dataParts[17]) : 0.0;
+            telemetryData.Baro.Pressure = dataParts.Length > 18 ? ParseDoubleSafe(dataParts[18]) : 0.0;
+            telemetryData.Baro.Altitude = dataParts.Length > 19 ? ParseDoubleSafe(dataParts[19]) : 0.0;
 
-            telemetryData.Baro.AccZInertial = double.Parse(dataParts[16], CultureInfo.InvariantCulture);
-            telemetryData.Baro.VerticalVelocity = double.Parse(dataParts[17], CultureInfo.InvariantCulture);
-            telemetryData.Baro.Pressure = double.Parse(dataParts[18], CultureInfo.InvariantCulture);
-            telemetryData.Baro.Altitude = double.Parse(dataParts[19], CultureInfo.InvariantCulture);
-
-            telemetryData.GPS.Latitude = double.Parse(dataParts[20], CultureInfo.InvariantCulture);
-            telemetryData.GPS.Longitude = double.Parse(dataParts[21], CultureInfo.InvariantCulture);
+            telemetryData.GPS.Latitude = dataParts.Length > 20 ? ParseDoubleSafe(dataParts[20]) : 0.0;
+            telemetryData.GPS.Longitude = dataParts.Length > 21 ? ParseDoubleSafe(dataParts[21]) : 0.0;
 
             return telemetryData;
         }
+
+
+        private double ParseDoubleSafe(string value)
+        {
+            return double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out double result) ? result : 0.0;
+        }
+
 
         protected virtual void OnDataReceived()
         {
