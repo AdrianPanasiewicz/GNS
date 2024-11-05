@@ -63,15 +63,9 @@ namespace GNS
         /// <param name="serialReader"></param>
         public static void BackEnd(TelemetryProcessor processor, LoRaSerialReader serialReader)
         {
-            // Uruchom klase dp czytania danych z IUSB
-            serialReader.Run();
-            GNS formInstance = Application.OpenForms.OfType<GNS>().FirstOrDefault();
             serialReader.DataReceived += Program.OnDataReceived;
+            serialReader.Run();
 
-            while (true)
-            {
-                // Czekanie na wydarzenie DataReceived
-            }
         }
 
         /// <summary>
