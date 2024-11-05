@@ -632,35 +632,35 @@ namespace GNS
 
             label8.Text = $"{(int)lat}°{minLat}'{secLat}\" N";
             label8.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label8.Location = new Point((panel4.Width - label8.Width) / 2, 60);
+            label8.Location = new Point((panel4.Width - label8.Width) / 2 - 15, 60);
             label8.TextAlign = ContentAlignment.MiddleCenter;
             label8.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label8.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label9.Text = $"{(int)lng}°{minLng}'{secLng}\" E";
             label9.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label9.Location = new Point((panel2.Width - label9.Width) / 2, 60);
+            label9.Location = new Point((panel2.Width - label9.Width) / 2 - 15, 60);
             label9.TextAlign = ContentAlignment.MiddleCenter;
             label9.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label9.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label10.Text = "0 m/s";
             label10.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label10.Location = new Point(((panel.Width - label10.Width) / 2), 50);
+            label10.Location = new Point(((panel.Width - label10.Width) / 2 - 15), 50);
             label10.TextAlign = ContentAlignment.MiddleCenter;
             label10.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label10.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label11.Text = "0 m/s^2";
             label11.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label11.Location = new Point(((panel6.Width - label11.Width) / 2), 50);
+            label11.Location = new Point(((panel6.Width - label11.Width) / 2 - 15), 50);
             label11.TextAlign = ContentAlignment.MiddleCenter;
             label11.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label11.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label12.Text = "0 m";
             label12.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label12.Location = new Point(((panel7.Width - label12.Width) / 2), 50);
+            label12.Location = new Point(((panel7.Width - label12.Width) / 2 - 15), 50);
             label12.TextAlign = ContentAlignment.MiddleCenter;
             label12.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label12.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
@@ -928,7 +928,7 @@ namespace GNS
 
         }
         /// <summary>
-        /// Do oblczania dystansu w metrach miedzy dwoma wspolrzednymi geograficznymi
+        /// Do obliczania dystansu w metrach miedzy dwoma wspolrzednymi geograficznymi
         /// </summary>
         /// <param name="lat1"></param>
         /// <param name="lon1"></param>
@@ -949,13 +949,12 @@ namespace GNS
         }
 
 
-        // Method to adjust camera view based on points added
+        /// <summary>
+        /// Metoda do autoskalowania trajektorii rakiety
+        /// </summary>
         private void AdjustCameraToViewAllPoints()
         {
-            if (_pointsVisual.Points.Count == 0)
-                return;
-
-            // Calculate bounding box of all points
+            // Obliczanie granic (bounding box) wszystkich punktów
             var minX = _pointsVisual.Points.Min(p => p.X);
             var maxX = _pointsVisual.Points.Max(p => p.X);
             var minY = _pointsVisual.Points.Min(p => p.Y);
@@ -963,28 +962,38 @@ namespace GNS
             var minZ = _pointsVisual.Points.Min(p => p.Z);
             var maxZ = _pointsVisual.Points.Max(p => p.Z);
 
-            // Center of bounding box
+            // Obliczanie środka bounding boxa
             var centerX = (minX + maxX) / 2;
             var centerY = (minY + maxY) / 2;
             var centerZ = (minZ + maxZ) / 2;
             var center = new Point3D(centerX, centerY, centerZ);
 
-            // Size of bounding box
+            // Rozmiar bounding boxa
             var sizeX = maxX - minX;
             var sizeY = maxY - minY;
             var sizeZ = maxZ - minZ;
             var maxDimension = Math.Max(sizeX, Math.Max(sizeY, sizeZ));
 
-            // Adjust the camera's distance from the center based on the bounding box size
-            var distance = maxDimension * 1.5; // Adjust the multiplier if needed
+            // Obliczanie optymalnej odległości kamery, starając się nie zmieniać za bardzo obecnej odległości
+            var currentCameraPosition = helixViewport.Camera.Position;
+            var currentDistance = (center - currentCameraPosition).Length;
+            var targetDistance = maxDimension * 1.5;
 
-            helixViewport.Camera = new PerspectiveCamera
-            {
-                Position = new Point3D(centerX + distance, centerY + distance, centerZ + distance),
-                LookDirection = new Vector3D(centerX - (centerX + distance), centerY - (centerY + distance), centerZ - (centerZ + distance)),
-                UpDirection = new Vector3D(0, 0, 1),
-                FieldOfView = 45
-            };
+            // Ustalanie odległości kamery na podstawie obecnej i docelowej odległości
+            var distance = Math.Min(currentDistance, targetDistance);
+            var direction = (currentCameraPosition - center);
+            direction.Normalize(); // Normalizacja kierunku (wektor jednostkowy)
+
+            // Nowa pozycja kamery, obliczona na podstawie kierunku i odległości
+            var newPosition = new Point3D(
+                center.X + direction.X * distance,
+                center.Y + direction.Y * distance,
+                center.Z + direction.Z * distance
+            );
+
+            // Ustawienie nowej pozycji i kierunku patrzenia kamery
+            helixViewport.Camera.Position = newPosition;
+            helixViewport.Camera.LookDirection = center - newPosition;
         }
 
         /// <summary>
