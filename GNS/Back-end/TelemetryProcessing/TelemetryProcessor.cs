@@ -37,7 +37,7 @@ namespace GroundControlSystem.TelemetryProcessing
                 packet,
             };
 
-            string csvLine = packet.ToString();
+            string csvLine = packet.ToCSV();
 
             try
             {

@@ -61,6 +61,7 @@ namespace GNS
 
         private ConcurrentQueue<TelemetryData> telemetryDataQueue;
         private SeriesCollection seriesCollection1, seriesCollection2, seriesCollection3;
+        private PointsVisual3D _pointsVisual;
 
         private ModelVisual3D _RocketModel;
 
@@ -719,51 +720,21 @@ namespace GNS
             guiUpdateThread.IsBackground = true;
             guiUpdateThread.Start();
 
-
-            var pointsCollection = new Point3DCollection();
-
-            // Tworzymy 100 punktów od (0, 0, 0) do (99, 99, 99)
-            for (double i = 0; i < 100; i += 0.1)
-            {
-                pointsCollection.Add(new Point3D(0, 0, i));
-            }
-
             // Ustawiamy wizualizację punktów
-            var pointsVisual = new PointsVisual3D
+            _pointsVisual = new PointsVisual3D
             {
                 Color = System.Windows.Media.Colors.Red,
                 Size = 5,
                 Points = new Point3DCollection() // Pusta kolekcja, aby dodawać punkty jeden po drugim
             };
 
-            helixViewport.Children.Add(pointsVisual);
+            helixViewport.Children.Add(_pointsVisual);
 
             // Przypisujemy HelixViewport do elementu hostującego
             elementHost.Child = helixViewport;
 
             // Dodajemy element hostujący do formularza
             panel5.Controls.Add(elementHost);
-
-            var timer = new System.Windows.Forms.Timer { Interval = 1000 }; // 1000ms = 1 sekunda
-            int currentPointIndex = 0;
-
-            // Timer tick event
-            timer.Tick += (sender, e) =>
-            {
-                if (currentPointIndex < pointsCollection.Count)
-                {
-                    // Dodajemy kolejny punkt do wizualizacji
-                    pointsVisual.Points.Add(pointsCollection[currentPointIndex]);
-                    currentPointIndex++; // Przesuwamy do następnego punktu
-                }
-                else
-                {
-                    // Zatrzymujemy timer, jeśli wszystkie punkty zostały wyświetlone
-                    timer.Stop();
-                }
-            };
-
-            timer.Start(); // Rozpoczynamy timer
 
         }
 
@@ -876,6 +847,10 @@ namespace GNS
             DateTime _startDateTime = DateTime.Now;
             DateTime _nowDateTime = DateTime.Now;
             double _timestamp = 0;
+            bool xyzPosSet = false;
+            double xPoxOrgin = 0.0;
+            double yPoxOrgin = 0.0;
+            double zPoxOrgin = 0.0;
 
             while (true)
             {
@@ -887,6 +862,16 @@ namespace GNS
                     // Oblicz timestamp od uruchomienie programu
                     _nowDateTime = DateTime.Now;
                     _timestamp = (_nowDateTime - _startDateTime).TotalSeconds;
+
+                    if (!xyzPosSet)
+                        {
+                            xPoxOrgin = telemetryPacket.GPS.Latitude;
+                            yPoxOrgin = telemetryPacket.GPS.Longitude;
+                            zPoxOrgin = telemetryPacket.Baro.Altitude;
+
+                            xyzPosSet = true;
+
+                        }
 
                     // Wyslij punkt do wykresow
                     seriesCollection1[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.VerticalVelocity));
@@ -929,6 +914,12 @@ namespace GNS
                     // Zaktutalizuj labels
                     label8.Text = $"{(int)lat}°{minLat}'{secLat}\" N";
                     label9.Text = $"{(int)lng}°{minLng}'{secLng}\" E";
+
+                    double xPos = lat - xPoxOrgin;
+                    double yPos = lng - yPoxOrgin;
+                    double zPos = telemetryPacket.Baro.Altitude - zPoxOrgin;
+
+                    _pointsVisual.Points.Add(new Point3D(xPos, yPos, zPos));
 
                     UpdateRocketOrientation();
 

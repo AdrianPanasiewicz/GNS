@@ -34,5 +34,21 @@ namespace SerialCom
                 $"Pressure: {Baro.Pressure}\t Altitude: {Baro.Altitude}\n\n" +
                 "GPS:\n" + $"Latitude: {GPS.Latitude}\t Longitude: {GPS.Longitude}";
         }
+
+        public string ToCSV()
+        {
+            return string.Join(",",
+                LoRa.MsgLength, LoRa.RSSI, LoRa.SNR,
+                Time.TimeStamp,
+                IMU.AccX, IMU.AccY, IMU.AccZ,
+                IMU.GyroX, IMU.GyroY, IMU.GyroZ,
+                IMU.MagX, IMU.MagY, IMU.MagZ,
+                IMU.Heading, IMU.Pitch, IMU.Roll,
+                Baro.AccZInertial, Baro.VerticalVelocity,
+                Baro.Pressure, Baro.Altitude,
+                GPS.Latitude, GPS.Longitude,
+                LoRa.RSSI, LoRa.SNR
+            );
+        }
     }
 }
