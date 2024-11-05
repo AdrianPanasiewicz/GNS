@@ -136,19 +136,13 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Back-end\Communication\IUSBReceiver.cs" />
-    <Compile Include="Back-end\Communication\SimulatedUSBReceiver.cs" />
-    <Compile Include="Back-end\Communication\USBManager.cs" />
-    <Compile Include="Back-end\Communication\USBReceiver.cs" />
-    <Compile Include="Back-end\DataModels\BaroData.cs" />
-    <Compile Include="Back-end\DataModels\GPSData.cs" />
-    <Compile Include="Back-end\DataModels\IMUData.cs" />
-    <Compile Include="Back-end\DataModels\TelemetryPacket.cs" />
-    <Compile Include="Back-end\DataModels\TSSData.cs" />
-    <Compile Include="Back-end\DataModels\TVSData.cs" />
+    <Compile Include="Back-end\Communication_obsolete\IUSBReceiver.cs" />
+    <Compile Include="Back-end\Communication_obsolete\SimulatedUSBReceiver.cs" />
+    <Compile Include="Back-end\Communication_obsolete\USBManager.cs" />
+    <Compile Include="Back-end\Communication_obsolete\USBReceiver.cs" />
     <Compile Include="Back-end\SerialCom\DataModel.cs" />
     <Compile Include="Back-end\SerialCom\SerialReader.cs" />
-    <Compile Include="Back-end\SerialCom\TelemetryData.cs" />
+    <Compile Include="Back-end\DataModels\TelemetryData.cs" />
     <Compile Include="Back-end\TelemetryProcessing\TelemetryProcessor.cs" />
     <Compile Include="GNS.cs">
       <SubType>Form</SubType>
@@ -171,7 +165,10 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <None Include="app.manifest" />
-    <None Include="Data\telemetry_data.csv" />
+    <None Include="Resources\RocketPhoto\12216_rocket_v1_l2.mtl" />
+    <None Include="Resources\RocketPhoto\12216_rocket_v1_l2.obj" />
+    <None Include="Resources\RocketPhoto\12217_rocket_v1_l1.mtl" />
+    <None Include="Resources\RocketPhoto\12217_rocket_v1_l1.obj" />
     <None Include="Front-end\App.config" />
     <None Include="Front-end\app.manifest" />
     <None Include="Front-end\OpenTK.dll.config" />
@@ -192,7 +189,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Resources\" />
+    <Folder Include="Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\RocketPhoto\Rakieta.png" />
+    <Content Include="Resources\RocketPhoto\rocket.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

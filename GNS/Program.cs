@@ -1,7 +1,8 @@
 ﻿using GroundControlSystem.Communication;
-using GroundControlSystem.DataModels;
 using GroundControlSystem.TelemetryProcessing;
+using SerialCom;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,12 +12,17 @@ namespace GNS
 {
     internal static class Program
     {
-        /// <summary>
-        /// Główny punkt wejścia dla aplikacji.
-        /// </summary>
+        private static LoRaSerialReader serialReader;
+        private static TelemetryProcessor processor;
+        private static GNS formInstance;
+
         [STAThread]
         static void Main()
         {
+            // Stworz klase odpowiedzialna za czytanie danych z SerialPort i zainicjalizuj ja
+            serialReader = new LoRaSerialReader();
+            serialReader.ShowPortSelection();
+            serialReader.Init();
 
             // Znajdz sciezke do przestrzeni roboczej
             string workingDirectory = Environment.CurrentDirectory;
@@ -24,20 +30,13 @@ namespace GNS
             string saveFilePath = projectDirectory + "\\GNS\\Data\\telemetry_data.csv";
 
             // Stworzenie procesora do obslugi pobieranych danych z USB
-            TelemetryProcessor processor = new TelemetryProcessor(saveFilePath);
+            processor = new TelemetryProcessor(saveFilePath);
 
-            // Ustaw flagę true, aby użyć symulacji, false dla rzeczywistego USB
-            bool useSimulation = true;
-
-            USBManager usbManager = new USBManager(useSimulation);
-
-            // Inicjalizuj połączenie USB i odbierz dane
-            usbManager.usbReceiver.InitializeConnection();
-            Console.WriteLine("Rozpoczynanie odbioru danych z USB...");
-
+            serialReader.DataReceived += Program.OnDataReceived;
 
             // Stworzenie watku do obslugi back-end
-            Thread BackEndThread = new Thread(() => BackEnd(processor, usbManager));
+            Thread BackEndThread = new Thread(() => BackEnd(processor, serialReader));
+            BackEndThread.IsBackground = true;
             BackEndThread.Name = "Main thread";
 
 
@@ -48,7 +47,7 @@ namespace GNS
 
             // Uruchomienie obu watkow
             GUIThread.Start();
-            Thread.Sleep(5000);
+            Thread.Sleep(7000);
             BackEndThread.Start();
 
         }
@@ -62,40 +61,13 @@ namespace GNS
         /// 4. Przesylanie do Front- end.
         /// </summary>
         /// <param name="processor"></param>
-        /// <param name="usbManager"></param>
-        public static void BackEnd(TelemetryProcessor processor, USBManager usbManager)
+        /// <param name="serialReader"></param>
+        public static void BackEnd(TelemetryProcessor processor, LoRaSerialReader serialReader)
         {
+            // Uruchom klase dp czytania danych z IUSB
+            serialReader.Run();
+            GNS formInstance = Application.OpenForms.OfType<GNS>().FirstOrDefault();
 
-            while (true)
-            {
-                GNS formInstance = Application.OpenForms.OfType<GNS>().FirstOrDefault();
-
-                // 1, Pobranie danych z USB
-                byte[] rawData = usbManager.usbReceiver.ReceiveData();
-
-                // 2. Przetwórz dane do obiektu telemetrycznego
-                TelemetryPacket telemetryPacket = processor.ProcessRawData(rawData);
-
-                // 3. Zapisz dane do CSV
-                processor.SaveToCSV(telemetryPacket);
-
-                // 4. Wyświetl dane telemetryczne w konsoli
-                Console.WriteLine("Dane telemetryczne:");
-                Console.WriteLine(telemetryPacket.ToCSV());
-
-
-                // 5. Przeslij dane telemetryczne do GUI
-                if (formInstance != null)
-                {
-                    formInstance.Invoke(new Action(() =>
-                    {
-                        formInstance.AddTelemetryDataPoint(telemetryPacket);
-                    }));
-                }
-
-                // 6. Czekaj okreslona chwile
-                Thread.Sleep(500);
-            }
         }
 
         /// <summary>
@@ -105,11 +77,37 @@ namespace GNS
         /// </summary>
         public static void GUI()
         {
+            
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new GNS());
+            formInstance = new GNS();
+            Application.Run(formInstance);
             Environment.Exit(0);
         }
+
+        public static void OnDataReceived(object source, EventArgs e)
+        {
+            // 1. Przetwórz dane do obiektu telemetrycznego
+            TelemetryData telemetryPacket = serialReader.ToTelemetryData();
+
+            // 2. Zapisz dane do CSV
+            processor.SaveToCSV(telemetryPacket);
+
+            // 3. Wyświetl dane telemetryczne w konsoli
+            Console.WriteLine("Dane telemetryczne:");
+            Console.WriteLine(telemetryPacket.ToString());
+
+
+            // 4. Przeslij dane telemetryczne do GUI
+            if (formInstance != null)
+            {
+                formInstance.Invoke(new Action(() =>
+                {
+                    formInstance.AddTelemetryDataPoint(telemetryPacket);
+                }));
+            }
+        }
+
     }
 
 }

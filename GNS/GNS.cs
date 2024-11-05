@@ -32,20 +32,25 @@ using System.IO;
 using System.Collections.Concurrent;
 using Newtonsoft.Json.Linq;
 using System.Threading;
-using GroundControlSystem.DataModels;
 using static GMap.NET.Entity.OpenStreetMapRouteEntity;
 using System.Windows.Media;
+using SerialCom;
 
 namespace GNS
 {
     public partial class GNS : Form
     {
-        private float pitch = 0;   // początkowa wartość pitch
-        private float roll = 0;    // początkowa wartość roll
-        private float heading = 0; // początkowa wartość heading
+        private double pitch = 0;
+        private double roll = 0;
+        private double heading = 0;
 
         private double lat = 0;
         private double lng = 0;
+
+        private double minLat = 0;
+        private double secLat = 0;
+        private double minLng = 0;
+        private double secLng = 0;
 
         private GameWindow gameWindow;
 
@@ -53,11 +58,15 @@ namespace GNS
 
         private ElementHost host;
         private HelixViewport3D viewport;
+        private HelixViewport3D helixViewport;
 
-        private ConcurrentQueue<TelemetryPacket> telemetryDataQueue;
+        private ConcurrentQueue<TelemetryData> telemetryDataQueue;
         private SeriesCollection seriesCollection1, seriesCollection2, seriesCollection3;
+        private PointsVisual3D _pointsVisual;
 
         private ModelVisual3D _RocketModel;
+
+        private string _RocketFilePath;
 
         public GNS()
         {
@@ -65,9 +74,9 @@ namespace GNS
             this.DoubleBuffered = true;
             this.Size = new Size(1920, 1080);
             this.BackColor = System.Drawing.Color.FromArgb(255, 20, 33, 61);
-            this.Load += new EventHandler(GNS_Load); // Dodanie zdarzenia Load
+            //this.Load += new EventHandler(GNS_Load); // Dodanie zdarzenia Load
 
-            telemetryDataQueue = new ConcurrentQueue<TelemetryPacket>();
+            telemetryDataQueue = new ConcurrentQueue<TelemetryData>();
 
             host = new ElementHost();
             host.Size = new Size(622, 542);
@@ -75,7 +84,13 @@ namespace GNS
 
             viewport = new HelixViewport3D();
             host.Child = viewport;
-            LoadRocketModel("C:\\Users\\fs24f\\source\\repos\\GNS\\RocketPhoto\\12217_rocket_v1_l1.obj");
+
+            // Znajdz sciezke do przestrzeni roboczej
+            string workingDirectory = Environment.CurrentDirectory;
+            string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
+            this._RocketFilePath = projectDirectory + "\\GNS\\Resources\\RocketPhoto\\LIKWIDATOR_Assembly.obj";
+
+            LoadRocketModel();
 
             // Create and define the axis lines
             var xAxis = new LinesVisual3D
@@ -148,8 +163,8 @@ namespace GNS
 
             Panel panel2 = new Panel
             {
-                Size = new Size(305, 130),
-                Location = new Point(1605, 860),
+                Size = new Size(305, 100),
+                Location = new Point(1605, 780),
                 //Dock = DockStyle.Fill,
                 AutoScroll = true,
                 BackColor = System.Drawing.Color.Transparent,
@@ -219,7 +234,7 @@ namespace GNS
             label16.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label16.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
-            label17.Text = "Heading:";
+            label17.Text = "HDG:";
             label17.Font = new Font("Aptos", 20, FontStyle.Bold);
             label17.Location = new Point(20, 15);
             label17.TextAlign = ContentAlignment.MiddleCenter;
@@ -249,7 +264,7 @@ namespace GNS
 
             Panel panel3 = new Panel
             {
-                Size = new Size(620, 480),
+                Size = new Size(620, 400),
                 Location = new Point(1290, 370),
                 //Dock = DockStyle.Fill,
                 AutoScroll = true,
@@ -275,7 +290,7 @@ namespace GNS
 
             gMapControl = new GMapControl
             {
-                Size = new Size(612, 472),
+                Size = new Size(612, 392),
                 Location = new Point(4, 4),
                 //Dock = DockStyle.Fill // Wypełni cały formularz
             };
@@ -283,8 +298,6 @@ namespace GNS
             // Ustawienia GMapControl
             gMapControl.MapProvider = GMapProviders.GoogleMap; // Możesz zmienić na inny dostawca
             GMaps.Instance.Mode = AccessMode.ServerAndCache; // Używamy trybu serwerowego i pamięci podręcznej
-            double lat = 52.2297;
-            double lng = 21.0122;
             gMapControl.Position = new PointLatLng(lat, lng); // Ustawienie pozycji (Warszawa)
             gMapControl.MinZoom = 5;
             gMapControl.MaxZoom = 100;
@@ -311,8 +324,8 @@ namespace GNS
 
             Panel panel4 = new Panel
             {
-                Size = new Size(305, 130),
-                Location = new Point(1290, 860),
+                Size = new Size(305, 100),
+                Location = new Point(1290, 780),
                 AutoScroll = true,
                 BackColor = System.Drawing.Color.Transparent,
             };
@@ -509,6 +522,65 @@ namespace GNS
             panel10.Controls.Add(label20);
             this.Controls.Add(panel10);
 
+
+            Panel panel11 = new Panel
+            {
+                Size = new Size(305, 100),
+                Location = new Point(1290, 890),
+                AutoScroll = true,
+                BackColor = System.Drawing.Color.Transparent,
+            };
+
+            panel11.Paint += (sender, e) =>
+            {
+                // Prostokąt panelu
+                Rectangle rect = panel11.ClientRectangle;
+
+                // Zmniejsz rozmiar prostokąta o 1 piksel, aby upewnić się, że obramowanie będzie rysowane wewnątrz krawędzi
+                rect.Inflate(-1, -1);
+
+                // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
+                ControlPaint.DrawBorder(e.Graphics, panel11.ClientRectangle,
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+            };
+
+            panel11.Controls.Add(label13);
+            panel11.Controls.Add(label4);
+            this.Controls.Add(panel11);
+
+
+            Panel panel12 = new Panel
+            {
+                Size = new Size(305, 100),
+                Location = new Point(1605, 890),
+                AutoScroll = true,
+                BackColor = System.Drawing.Color.Transparent,
+            };
+
+            panel12.Paint += (sender, e) =>
+            {
+                // Prostokąt panelu
+                Rectangle rect = panel12.ClientRectangle;
+
+                // Zmniejsz rozmiar prostokąta o 1 piksel, aby upewnić się, że obramowanie będzie rysowane wewnątrz krawędzi
+                rect.Inflate(-1, -1);
+
+                // Rysowanie obramowania o grubości 2 pikseli wokół całego panelu
+                ControlPaint.DrawBorder(e.Graphics, panel12.ClientRectangle,
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Lewa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Górna strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid,  // Prawa strona
+                    System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
+            };
+
+            panel12.Controls.Add(label14);
+            panel12.Controls.Add(label5);
+            this.Controls.Add(panel12);
+
+
             label1.Text = "Vertical velocity";
             label1.Font = new Font("Aptos", 24, FontStyle.Bold);
             label1.Location = new Point((panel.Width - label1.Width) / 2, 10);
@@ -530,54 +602,84 @@ namespace GNS
             label3.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label3.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
+            label4.Text = "RSSI";
+            label4.Font = new Font("Aptos", 28, FontStyle.Bold);
+            label4.Location = new Point(((panel11.Width - label4.Width) / 2), 10);
+            label4.TextAlign = ContentAlignment.MiddleCenter;
+            label4.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label4.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
+
+            label5.Text = "SNR";
+            label5.Font = new Font("Aptos", 28, FontStyle.Bold);
+            label5.Location = new Point(((panel12.Width - label5.Width) / 2), 10);
+            label5.TextAlign = ContentAlignment.MiddleCenter;
+            label5.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label5.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
+
             label6.Text = "Latitude";
             label6.Font = new Font("Aptos", 28, FontStyle.Bold);
-            label6.Location = new Point((panel4.Width - label6.Width) / 2, 20);
+            label6.Location = new Point((panel4.Width - label6.Width) / 2, 10);
             label6.TextAlign = ContentAlignment.MiddleCenter;
             label6.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label6.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label7.Text = "Longitude";
             label7.Font = new Font("Aptos", 28, FontStyle.Bold);
-            label7.Location = new Point((panel2.Width - label7.Width) / 2, 20);
+            label7.Location = new Point((panel2.Width - label7.Width) / 2, 10);
             label7.TextAlign = ContentAlignment.MiddleCenter;
             label7.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label7.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
-            label8.Text = "52°13'47.17\"N";
+            label8.Text = $"{(int)lat}°{minLat}'{secLat}\" N";
             label8.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label8.Location = new Point((panel4.Width - label8.Width) / 2, 80);
+            label8.Location = new Point((panel4.Width - label8.Width) / 2, 60);
             label8.TextAlign = ContentAlignment.MiddleCenter;
             label8.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label8.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
-            label9.Text = "21°0'42.41\"E";
+            label9.Text = $"{(int)lng}°{minLng}'{secLng}\" E";
             label9.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label9.Location = new Point((panel2.Width - label9.Width) / 2, 80);
+            label9.Location = new Point((panel2.Width - label9.Width) / 2, 60);
             label9.TextAlign = ContentAlignment.MiddleCenter;
             label9.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label9.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label10.Text = "0 m/s";
             label10.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label10.Location = new Point(((panel.Width - label10.Width - 45) / 2), 50);
+            label10.Location = new Point(((panel.Width - label10.Width) / 2), 50);
             label10.TextAlign = ContentAlignment.MiddleCenter;
             label10.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label10.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label11.Text = "0 m/s^2";
             label11.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label11.Location = new Point(((panel6.Width - label11.Width - 45) / 2), 50);
+            label11.Location = new Point(((panel6.Width - label11.Width) / 2), 50);
             label11.TextAlign = ContentAlignment.MiddleCenter;
             label11.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label11.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
             label12.Text = "0 m";
             label12.Font = new Font("Aptos", 18, FontStyle.Bold);
-            label12.Location = new Point(((panel7.Width - label12.Width - 45) / 2), 50);
+            label12.Location = new Point(((panel7.Width - label12.Width) / 2), 50);
             label12.TextAlign = ContentAlignment.MiddleCenter;
             label12.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label12.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
+
+            label13.Text = "0 dBm";
+            label13.Font = new Font("Aptos", 18, FontStyle.Bold);
+            label13.Location = new Point(((panel11.Width - label13.Width) / 2), 60);
+            label13.TextAlign = ContentAlignment.MiddleCenter;
+            label13.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label13.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
+
+            label14.Text = "0 dB";
+            label14.Font = new Font("Aptos", 18, FontStyle.Bold);
+            label14.Location = new Point(((panel12.Width - label14.Width) / 2), 60);
+            label14.TextAlign = ContentAlignment.MiddleCenter;
+            label14.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
+            label14.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tłos
+
+
 
             cartesianChart1.Size = new Size(600, 250);
             cartesianChart1.Location = new Point(((panel.Width - cartesianChart1.Width) / 2), 90);
@@ -681,8 +783,7 @@ namespace GNS
                 Location = new Point(4, 4),
             };
 
-            // Tworzymy widok 3D
-            HelixViewport3D helixViewport = new HelixViewport3D();
+            helixViewport = new HelixViewport3D();
 
             // Ustawiamy kamerę
             helixViewport.Camera = new PerspectiveCamera
@@ -695,8 +796,8 @@ namespace GNS
 
             helixViewport.Children.Add(new GridLinesVisual3D
             {
-                Width = 40,
-                Length = 40,
+                Width = 4000,
+                Length = 4000,
                 MinorDistance = 1,
                 MajorDistance = 5
             });
@@ -708,51 +809,21 @@ namespace GNS
             guiUpdateThread.IsBackground = true;
             guiUpdateThread.Start();
 
-
-            var pointsCollection = new Point3DCollection();
-
-            // Tworzymy 100 punktów od (0, 0, 0) do (99, 99, 99)
-            for (double i = 0; i < 100; i += 0.1)
-            {
-                pointsCollection.Add(new Point3D(0, 0, i));
-            }
-
             // Ustawiamy wizualizację punktów
-            var pointsVisual = new PointsVisual3D
+            _pointsVisual = new PointsVisual3D
             {
                 Color = System.Windows.Media.Colors.Red,
                 Size = 5,
                 Points = new Point3DCollection() // Pusta kolekcja, aby dodawać punkty jeden po drugim
             };
 
-            helixViewport.Children.Add(pointsVisual);
+            helixViewport.Children.Add(_pointsVisual);
 
             // Przypisujemy HelixViewport do elementu hostującego
             elementHost.Child = helixViewport;
 
             // Dodajemy element hostujący do formularza
             panel5.Controls.Add(elementHost);
-
-            var timer = new System.Windows.Forms.Timer { Interval = 1000 }; // 1000ms = 1 sekunda
-            int currentPointIndex = 0;
-
-            // Timer tick event
-            timer.Tick += (sender, e) =>
-            {
-                if (currentPointIndex < pointsCollection.Count)
-                {
-                    // Dodajemy kolejny punkt do wizualizacji
-                    pointsVisual.Points.Add(pointsCollection[currentPointIndex]);
-                    currentPointIndex++; // Przesuwamy do następnego punktu
-                }
-                else
-                {
-                    // Zatrzymujemy timer, jeśli wszystkie punkty zostały wyświetlone
-                    timer.Stop();
-                }
-            };
-
-            timer.Start(); // Rozpoczynamy timer
 
         }
 
@@ -786,19 +857,17 @@ namespace GNS
 
         }
 
-        private void LoadRocketModel(string path)
+        private void LoadRocketModel()
         {
-            // Ścieżka do pliku modelu .obj
-            string modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RocketPhoto", "12217_rocket_v1_l1.obj");
 
-            if (!File.Exists(modelPath))
+            if (!File.Exists(_RocketFilePath))
             {
-                MessageBox.Show("Nie znaleziono pliku: " + modelPath);
+                MessageBox.Show("Nie znaleziono pliku: " + _RocketFilePath);
                 return;
             }
 
             var importer = new ModelImporter();
-            Model3D model = importer.Load(modelPath); // ModelImporter automatycznie załaduje plik .mtl, jeśli jest w tej samej lokalizacji i .obj na niego wskazuje
+            Model3D model = importer.Load(_RocketFilePath); // ModelImporter automatycznie załaduje plik .mtl, jeśli jest w tej samej lokalizacji i .obj na niego wskazuje
 
             // Utwórz model 3D do wyświetlenia
             _RocketModel = new ModelVisual3D { Content = model };
@@ -858,6 +927,65 @@ namespace GNS
         {
 
         }
+        /// <summary>
+        /// Do oblczania dystansu w metrach miedzy dwoma wspolrzednymi geograficznymi
+        /// </summary>
+        /// <param name="lat1"></param>
+        /// <param name="lon1"></param>
+        /// <param name="lat2"></param>
+        /// <param name="lon2"></param>
+        /// <returns></returns>
+        private double DistanceBetweenCoords(double lat1, double lon1, double lat2, double lon2)
+        {  // generally used geo measurement function
+            var R = 6378.137; // Radius of earth in KM
+            var dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
+            var dLon = lon2 * Math.PI / 180 - lon1 * Math.PI / 180;
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+            Math.Cos(lat1 * Math.PI / 180) * Math.Cos(lat2 * Math.PI / 180) *
+            Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            var d = R * c;
+            return d * 1000; // meters
+        }
+
+
+        // Method to adjust camera view based on points added
+        private void AdjustCameraToViewAllPoints()
+        {
+            if (_pointsVisual.Points.Count == 0)
+                return;
+
+            // Calculate bounding box of all points
+            var minX = _pointsVisual.Points.Min(p => p.X);
+            var maxX = _pointsVisual.Points.Max(p => p.X);
+            var minY = _pointsVisual.Points.Min(p => p.Y);
+            var maxY = _pointsVisual.Points.Max(p => p.Y);
+            var minZ = _pointsVisual.Points.Min(p => p.Z);
+            var maxZ = _pointsVisual.Points.Max(p => p.Z);
+
+            // Center of bounding box
+            var centerX = (minX + maxX) / 2;
+            var centerY = (minY + maxY) / 2;
+            var centerZ = (minZ + maxZ) / 2;
+            var center = new Point3D(centerX, centerY, centerZ);
+
+            // Size of bounding box
+            var sizeX = maxX - minX;
+            var sizeY = maxY - minY;
+            var sizeZ = maxZ - minZ;
+            var maxDimension = Math.Max(sizeX, Math.Max(sizeY, sizeZ));
+
+            // Adjust the camera's distance from the center based on the bounding box size
+            var distance = maxDimension * 1.5; // Adjust the multiplier if needed
+
+            helixViewport.Camera = new PerspectiveCamera
+            {
+                Position = new Point3D(centerX + distance, centerY + distance, centerZ + distance),
+                LookDirection = new Vector3D(centerX - (centerX + distance), centerY - (centerY + distance), centerZ - (centerZ + distance)),
+                UpDirection = new Vector3D(0, 0, 1),
+                FieldOfView = 45
+            };
+        }
 
         /// <summary>
         /// Funkcja do regularnej aktualizacji wykresu
@@ -867,54 +995,97 @@ namespace GNS
             DateTime _startDateTime = DateTime.Now;
             DateTime _nowDateTime = DateTime.Now;
             double _timestamp = 0;
+            bool xyzPosSet = false;
+            double xPoxOrgin = 0.0;
+            double yPoxOrgin = 0.0;
+            double zPoxOrgin = 0.0;
 
             while (true)
             {
-                if (telemetryDataQueue.TryDequeue(out TelemetryPacket telemetryPacket))
+                if (telemetryDataQueue.TryDequeue(out TelemetryData telemetryPacket))
                 {
                     // Zaktualizuj wykres w bezpieczny dla wątków sposób
                     this.Invoke(new Action(() =>
                     {
-                        // Oblicz timestamp od uruchomienie programu
-                        _nowDateTime = DateTime.Now;
-                        _timestamp = (_nowDateTime - _startDateTime).TotalSeconds;
+                    // Oblicz timestamp od uruchomienie programu
+                    _nowDateTime = DateTime.Now;
+                    _timestamp = (_nowDateTime - _startDateTime).TotalSeconds;
 
-                        // Wyslij punkt do wykresow
-                        seriesCollection1[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.IMU.VerVel));
-                        seriesCollection2[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.IMU.VelAcc));
-                        seriesCollection3[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.GPS.AltitudeGPS));
-                        label10.Text = (telemetryPacket.IMU.VerVel).ToString() + " m/s";
-                        label11.Text = (telemetryPacket.IMU.VelAcc).ToString() + " m/s^2";
-                        label12.Text = (telemetryPacket.GPS.AltitudeGPS).ToString() + " m";
+                    if (!xyzPosSet)
+                        {
+                            xPoxOrgin = telemetryPacket.GPS.Latitude;
+                            yPoxOrgin = telemetryPacket.GPS.Longitude;
+                            zPoxOrgin = telemetryPacket.Baro.Altitude;
+
+                            xyzPosSet = true;
+
+                        }
+
+                    // Wyslij punkt do wykresow
+                    seriesCollection1[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.VerticalVelocity));
+                    seriesCollection2[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.AccZInertial));  // Dopytac sie o ktora predkosc chodzi
+                    seriesCollection3[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.Altitude));
+
+                    // Trzymaj tylko 100 najnowszych punktow na wykresie
+                    if (seriesCollection1[0].Values.Count > 100) seriesCollection1[0].Values.RemoveAt(0);
+                    if (seriesCollection2[0].Values.Count > 100) seriesCollection2[0].Values.RemoveAt(0);
+                    if (seriesCollection3[0].Values.Count > 100) seriesCollection3[0].Values.RemoveAt(0);
+
+                    // Wyswietlenie aktualnej wartosci wysokosci, predkosci i przyspieszczenia wertykalnego
+                    label10.Text = (telemetryPacket.Baro.VerticalVelocity).ToString() + " m/s";
+                    label11.Text = (telemetryPacket.Baro.AccZInertial).ToString() + " m/s^2";
+                    label12.Text = (telemetryPacket.Baro.Altitude).ToString() + " m";
+
+                    // Zakutalizuj wartosci obrotu rakiety
+                    pitch = telemetryPacket.IMU.Pitch;
+                    roll = telemetryPacket.IMU.Roll;
+                    heading = telemetryPacket.IMU.Heading;
 
 
+                    // Wyswietl wartosci obrotu rakiety na GUI
+                    label18.Text = $"{(int)pitch}°";
+                    label19.Text = $"{(int)roll}°";
+                    label20.Text = $"{(int)heading}°";
 
-                        // Zakutalizuj wartosci obrotu rakiety
-                        pitch = telemetryPacket.IMU.Pitch;
-                        roll = telemetryPacket.IMU.Roll;
-                        heading = telemetryPacket.IMU.Heading;
+                    // Przemieszczenie pineski na aktualne wspolrzedne geograficzne
+                    lat = telemetryPacket.GPS.Latitude;
+                    lng = telemetryPacket.GPS.Longitude;
+                    gMapControl.Position = new PointLatLng(lat, lng);
 
-                        // Change
-                        // Wyswietl wartosci obrotu rakiety na GUI
-                        label18.Text = $"{(int)pitch}°";
-                        label19.Text = $"{(int)roll}°";
-                        label20.Text = $"{(int)heading}°";
+                    // Oblicz sekundy i minuty nowych wspolrzednych geograficznych
+                    minLat = (int)((lat - (int)lat) * 60);
+                    secLat = Math.Round((((lat - (int)lat) * 60) - minLat) * 60);
 
-                        //lat = telemetryPacket.GPS.Latitude;
-                        //lng = telemetryPacket.GPS.Longitude;
-                        //gMapControl.Position = new PointLatLng(lat, lng); // Ustawienie pozycji (Warszawa)
+                    minLng = (int)((lng - (int)lng) * 60);
+                    secLng = Math.Round((((lng - (int)lng) * 60) - minLng) * 60);
 
-                        // Przeslij nowe wspolrzedne #TODO 
-                        //label8.Text = telemetryPacket.GPS.Latitude + "° N";
-                        //label9.Text = telemetryPacket.GPS.Longitude + "° E";
+                    // Zaktutalizuj labels
+                    label8.Text = $"{(int)lat}°{minLat}'{secLat}\" N";
+                    label9.Text = $"{(int)lng}°{minLng}'{secLng}\" E";
 
-                        UpdateRocketOrientation();
+                    // Wyswietlenie danych odnosnie mocy sygnalu
+                    label13.Text = $"{telemetryPacket.LoRa.RSSI} dBm";
+                    label14.Text = $"{telemetryPacket.LoRa.SNR} dB";
+
+                    // Obliczenie wspolrzednych do wizualizacji trajektorii rakiety
+                    double xPos = DistanceBetweenCoords(xPoxOrgin,lng, lat, lng);
+                    double yPos = DistanceBetweenCoords(lat, yPoxOrgin, lat, lng);
+                    double zPos = telemetryPacket.Baro.Altitude - zPoxOrgin;
+
+                    // Dodanie aktualnej pozycji rakiety jako kolejny punkt
+                    _pointsVisual.Points.Add(new Point3D(xPos, yPos, zPos));
+
+                    // Dopasowanie odleglosci kameru, aby byly widoczne wszystkie punkty
+                    AdjustCameraToViewAllPoints();
+
+                    // Zaktualizowanie orientacji kamery
+                    UpdateRocketOrientation();
 
                     }));
                 }
 
-                // Odśwież wykres co 500 ms
-                Thread.Sleep(500);
+                // Odśwież wykres co 20 ms (50 Hz)
+                Thread.Sleep(16);
             }
         }
 
@@ -923,7 +1094,7 @@ namespace GNS
         /// </summary>
         /// <param name="time"></param>
         /// <param name="telemetryPacket"></param>
-        public void AddTelemetryDataPoint(TelemetryPacket telemetryPacket)
+        public void AddTelemetryDataPoint(TelemetryData telemetryPacket)
         {
             telemetryDataQueue.Enqueue(telemetryPacket);
         }
