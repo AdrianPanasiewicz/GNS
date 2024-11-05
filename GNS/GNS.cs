@@ -58,6 +58,7 @@ namespace GNS
 
         private ElementHost host;
         private HelixViewport3D viewport;
+        private HelixViewport3D helixViewport;
 
         private ConcurrentQueue<TelemetryData> telemetryDataQueue;
         private SeriesCollection seriesCollection1, seriesCollection2, seriesCollection3;
@@ -693,8 +694,7 @@ namespace GNS
                 Location = new Point(4, 4),
             };
 
-            // Tworzymy widok 3D
-            HelixViewport3D helixViewport = new HelixViewport3D();
+            helixViewport = new HelixViewport3D();
 
             // Ustawiamy kamerę
             helixViewport.Camera = new PerspectiveCamera
@@ -859,6 +859,45 @@ namespace GNS
             return d * 1000; // meters
         }
 
+
+        // Method to adjust camera view based on points added
+        private void AdjustCameraToViewAllPoints()
+        {
+            if (_pointsVisual.Points.Count == 0)
+                return;
+
+            // Calculate bounding box of all points
+            var minX = _pointsVisual.Points.Min(p => p.X);
+            var maxX = _pointsVisual.Points.Max(p => p.X);
+            var minY = _pointsVisual.Points.Min(p => p.Y);
+            var maxY = _pointsVisual.Points.Max(p => p.Y);
+            var minZ = _pointsVisual.Points.Min(p => p.Z);
+            var maxZ = _pointsVisual.Points.Max(p => p.Z);
+
+            // Center of bounding box
+            var centerX = (minX + maxX) / 2;
+            var centerY = (minY + maxY) / 2;
+            var centerZ = (minZ + maxZ) / 2;
+            var center = new Point3D(centerX, centerY, centerZ);
+
+            // Size of bounding box
+            var sizeX = maxX - minX;
+            var sizeY = maxY - minY;
+            var sizeZ = maxZ - minZ;
+            var maxDimension = Math.Max(sizeX, Math.Max(sizeY, sizeZ));
+
+            // Adjust the camera's distance from the center based on the bounding box size
+            var distance = maxDimension * 1.5; // Adjust the multiplier if needed
+
+            helixViewport.Camera = new PerspectiveCamera
+            {
+                Position = new Point3D(centerX + distance, centerY + distance, centerZ + distance),
+                LookDirection = new Vector3D(centerX - (centerX + distance), centerY - (centerY + distance), centerZ - (centerZ + distance)),
+                UpDirection = new Vector3D(0, 0, 1),
+                FieldOfView = 45
+            };
+        }
+
         /// <summary>
         /// Funkcja do regularnej aktualizacji wykresu
         /// </summary>
@@ -943,6 +982,10 @@ namespace GNS
                     // Dodanie aktualnej pozycji rakiety jako kolejny punkt
                     _pointsVisual.Points.Add(new Point3D(xPos, yPos, zPos));
 
+                    // Dopasowanie odleglosci kameru, aby byly widoczne wszystkie punkty
+                    AdjustCameraToViewAllPoints();
+
+                    // Zaktualizowanie orientacji kamery
                     UpdateRocketOrientation();
 
                     }));
