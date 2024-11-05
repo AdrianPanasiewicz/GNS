@@ -234,7 +234,7 @@ namespace GNS
             label16.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label16.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
-            label17.Text = "Heading:";
+            label17.Text = "HDG:";
             label17.Font = new Font("Aptos", 20, FontStyle.Bold);
             label17.Location = new Point(20, 15);
             label17.TextAlign = ContentAlignment.MiddleCenter;
@@ -1085,7 +1085,7 @@ namespace GNS
                 }
 
                 // Odśwież wykres co 20 ms (50 Hz)
-                Thread.Sleep(20);
+                Thread.Sleep(16);
             }
         }
 
