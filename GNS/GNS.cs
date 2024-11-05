@@ -1084,8 +1084,8 @@ namespace GNS
                     }));
                 }
 
-                // Odśwież wykres co 100 ms
-                Thread.Sleep(100);
+                // Odśwież wykres co 20 ms (50 Hz)
+                Thread.Sleep(20);
             }
         }
 
