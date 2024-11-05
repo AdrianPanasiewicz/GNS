@@ -707,8 +707,8 @@ namespace GNS
 
             helixViewport.Children.Add(new GridLinesVisual3D
             {
-                Width = 40,
-                Length = 40,
+                Width = 4000,
+                Length = 4000,
                 MinorDistance = 1,
                 MajorDistance = 5
             });
@@ -838,6 +838,26 @@ namespace GNS
         {
 
         }
+        /// <summary>
+        /// Do oblczania dystansu w metrach miedzy dwoma wspolrzednymi geograficznymi
+        /// </summary>
+        /// <param name="lat1"></param>
+        /// <param name="lon1"></param>
+        /// <param name="lat2"></param>
+        /// <param name="lon2"></param>
+        /// <returns></returns>
+        private double DistanceBetweenCoords(double lat1, double lon1, double lat2, double lon2)
+        {  // generally used geo measurement function
+            var R = 6378.137; // Radius of earth in KM
+            var dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
+            var dLon = lon2 * Math.PI / 180 - lon1 * Math.PI / 180;
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+            Math.Cos(lat1 * Math.PI / 180) * Math.Cos(lat2 * Math.PI / 180) *
+            Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            var d = R * c;
+            return d * 1000; // meters
+        }
 
         /// <summary>
         /// Funkcja do regularnej aktualizacji wykresu
@@ -915,10 +935,12 @@ namespace GNS
                     label8.Text = $"{(int)lat}°{minLat}'{secLat}\" N";
                     label9.Text = $"{(int)lng}°{minLng}'{secLng}\" E";
 
-                    double xPos = lat - xPoxOrgin;
-                    double yPos = lng - yPoxOrgin;
+                    // Obliczenie wspolrzednych do wizualizacji trajektorii rakiety
+                    double xPos = DistanceBetweenCoords(xPoxOrgin,lng, lat, lng);
+                    double yPos = DistanceBetweenCoords(lat, yPoxOrgin, lat, lng);
                     double zPos = telemetryPacket.Baro.Altitude - zPoxOrgin;
 
+                    // Dodanie aktualnej pozycji rakiety jako kolejny punkt
                     _pointsVisual.Points.Add(new Point3D(xPos, yPos, zPos));
 
                     UpdateRocketOrientation();
