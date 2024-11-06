@@ -54,7 +54,7 @@ namespace GNS
 
 
         /// <summary>
-        /// Funkcja do obslugi backend:
+        /// Metoda do obslugi back-end:
         /// 1. Pobieranie danych z USB.
         /// 2. Agregacja danych i ich przetwarzanie.
         /// 3. Zapisywanie do pliku CSV.
@@ -71,7 +71,7 @@ namespace GNS
         }
 
         /// <summary>
-        /// Funkcja do obslugi front-end:
+        /// Metoda do obslugi front-end:
         /// 1. Wyswietlanie danych w czasie rzeczywistym w okreslonym formacie.
         /// 2. Pozwalanie na komunikacje z uzytkownikiem.
         /// </summary>
@@ -84,7 +84,11 @@ namespace GNS
             Application.Run(formInstance);
             Environment.Exit(0);
         }
-
+        /// <summary>
+        /// Wzywana metoda w przypadku pojawienia się wydarzenia DataReceived
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="e"></param>
         public static void OnDataReceived(object source, EventArgs e)
         {
             // 1. Przetwórz dane do obiektu telemetrycznego
