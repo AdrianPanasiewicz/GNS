@@ -17,7 +17,7 @@ User-Friendly GUI: The application features a graphical user interface developed
 
 Programming Language: C#
 
-Framework: .NET
+Framework: .NET Framework 4.7.2.
 
 Communication: Real-time data communication with the rocket
 
