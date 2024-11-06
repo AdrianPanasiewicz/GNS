@@ -140,7 +140,7 @@
     <Compile Include="Back-end\Communication_obsolete\SimulatedUSBReceiver.cs" />
     <Compile Include="Back-end\Communication_obsolete\USBManager.cs" />
     <Compile Include="Back-end\Communication_obsolete\USBReceiver.cs" />
-    <Compile Include="Back-end\SerialCom\DataModel.cs" />
+    <Compile Include="Back-end\DataModels\DataModel.cs" />
     <Compile Include="Back-end\SerialCom\SerialReader.cs" />
     <Compile Include="Back-end\DataModels\TelemetryData.cs" />
     <Compile Include="Back-end\TelemetryProcessing\TelemetryProcessor.cs" />
