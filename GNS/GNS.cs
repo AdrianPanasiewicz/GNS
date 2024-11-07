@@ -788,7 +788,7 @@ namespace GNS
             // Ustawiamy kamerę
             helixViewport.Camera = new PerspectiveCamera
             {
-                Position = new Point3D(10, 10, 10),
+                Position = new Point3D(1, 1, 1),
                 LookDirection = new Vector3D(-10, -10, -10),
                 UpDirection = new Vector3D(0, 0, 1),
                 FieldOfView = 45
