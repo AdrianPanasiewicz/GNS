@@ -996,9 +996,20 @@ namespace GNS
             helixViewport.Camera.LookDirection = center - newPosition;
         }
 
+
+        private double CalcEarthAcc(double height)
+        {
+            double GravitationalConstant = 6.67430e-11;
+            double EarthMass = 5.972e24;
+            double EarthRadius = 6371000;
+
+            return (GravitationalConstant * EarthMass) / Math.Pow(EarthRadius + height, 2);
+        }
+
         /// <summary>
         /// Funkcja do regularnej aktualizacji wykresu
         /// </summary>
+        /// 
         private void UpdateChartLoop()
         {
             DateTime _startDateTime = DateTime.Now;
@@ -1030,9 +1041,12 @@ namespace GNS
 
                         }
 
+                     // Wnies poprawke na grawitacje ziemska przy horyzontalnym przyspieszeniu
+                    double VerAcc = -telemetryPacket.Baro.AccZInertial + CalcEarthAcc(telemetryPacket.Baro.Altitude);
+
                     // Wyslij punkt do wykresow
                     seriesCollection1[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.VerticalVelocity));
-                    seriesCollection2[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.AccZInertial));  // Dopytac sie o ktora predkosc chodzi
+                    seriesCollection2[0].Values.Add(new ObservablePoint(_timestamp, VerAcc));  // Dopytac sie o ktora predkosc chodzi
                     seriesCollection3[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.Altitude));
 
                     // Trzymaj tylko 100 najnowszych punktow na wykresie
@@ -1042,7 +1056,7 @@ namespace GNS
 
                     // Wyswietlenie aktualnej wartosci wysokosci, predkosci i przyspieszczenia wertykalnego
                     label10.Text = (telemetryPacket.Baro.VerticalVelocity).ToString() + " m/s";
-                    label11.Text = (telemetryPacket.Baro.AccZInertial).ToString() + " m/s^2";
+                    label11.Text = (VerAcc).ToString() + " m/s^2";
                     label12.Text = (telemetryPacket.Baro.Altitude).ToString() + " m";
 
                     // Zakutalizuj wartosci obrotu rakiety
@@ -1085,7 +1099,7 @@ namespace GNS
                     _pointsVisual.Points.Add(new Point3D(xPos, yPos, zPos));
 
                     // Dopasowanie odleglosci kameru, aby byly widoczne wszystkie punkty
-                    AdjustCameraToViewAllPoints();
+                    // AdjustCameraToViewAllPoints();
 
                     // Zaktualizowanie orientacji kamery
                     UpdateRocketOrientation();
