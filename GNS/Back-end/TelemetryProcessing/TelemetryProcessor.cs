@@ -69,31 +69,6 @@ namespace GroundControlSystem.TelemetryProcessing
                     using (StreamWriter streamWriter = new StreamWriter(filePath))
                     using (CsvWriter csvWriter = new CsvWriter(streamWriter, csvConfigWithHeader))
                     {
-                        // Zapisujemy nagłówki - dostosuj według swoich zmiennych
-                        csvWriter.WriteField("MsgLength");
-                        csvWriter.WriteField("RSSI");
-                        csvWriter.WriteField("SNR");
-                        csvWriter.WriteField("TimeStamp");
-                        csvWriter.WriteField("AccX");
-                        csvWriter.WriteField("AccY");
-                        csvWriter.WriteField("AccZ");
-                        csvWriter.WriteField("GyroX");
-                        csvWriter.WriteField("GyroY");
-                        csvWriter.WriteField("GyroZ");
-                        csvWriter.WriteField("MagX");
-                        csvWriter.WriteField("MagY");
-                        csvWriter.WriteField("MagZ");
-                        csvWriter.WriteField("Heading");
-                        csvWriter.WriteField("Pitch");
-                        csvWriter.WriteField("Roll");
-                        csvWriter.WriteField("Baro_AccZInertial");
-                        csvWriter.WriteField("VerticalVelocity");
-                        csvWriter.WriteField("Pressure");
-                        csvWriter.WriteField("Altitude");
-                        csvWriter.WriteField("Latitude");
-                        csvWriter.WriteField("Longitude");
-                        csvWriter.NextRecord(); // Przechodzimy do następnego rekordu
-
                         // Zapisujemy rekordy z nagłówkami
                         csvWriter.WriteRecords(records);
                     }
