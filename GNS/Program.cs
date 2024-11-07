@@ -21,8 +21,8 @@ namespace GNS
         {
             // Stworz klase odpowiedzialna za czytanie danych z SerialPort i zainicjalizuj ja
             serialReader = new LoRaSerialReader();
-            serialReader.ShowPortSelection();
-            serialReader.Init();
+            //serialReader.ShowPortSelection();
+            //serialReader.Init();
 
             // Znajdz sciezke do przestrzeni roboczej
             string workingDirectory = Environment.CurrentDirectory;

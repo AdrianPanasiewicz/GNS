@@ -4,13 +4,8 @@ using System.Globalization;
 using System.IO.Ports;
 using System.Linq;
 using System.Threading;
-using SerialCom.DataModel;
-using System.Collections.Concurrent;
-using GroundControlSystem.TelemetryProcessing;
 using System.Windows.Forms;
 using System.Drawing;
-using GNS;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace SerialCom
 {
@@ -41,7 +36,6 @@ namespace SerialCom
 
         private List<string> _receivedTelemetry;
         public List<string> ReceivedTelemetry { get => _receivedTelemetry; }
-        private string _partialMessage;
 
         private Thread serialThread;
         
@@ -54,15 +48,16 @@ namespace SerialCom
             serialThread = new Thread(ReadPort);
             _serialPort = new SerialPort();
             _receivedTelemetry = new List<string>();
-            _partialMessage = string.Empty;
+            ShowPortSelection();
+            Init();
         }
 
         public void Init() 
         {       
             _serialPort.PortName = _portName;
             _serialPort.BaudRate = _baudRate;
-            _serialPort.ReadTimeout = 2000;
-            _serialPort.WriteTimeout = 2000;
+            _serialPort.ReadTimeout = 7000;
+            _serialPort.WriteTimeout = 7000;
         }
 
         public void Run() 
@@ -76,6 +71,8 @@ namespace SerialCom
             serialThread.Join();
             _serialPort.Close();
             Dispose();
+            MessageBox.Show("SerialCom closed", "SerialCom", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            RestartApplication();
         }
 
         public void ReadPort()
@@ -113,15 +110,13 @@ namespace SerialCom
                         currentData += decodedData;
                         _receivedTelemetry.Add(currentData);
 
-                        OnDataReceived();
-
                         currentData = "";
                         OnDataReceived();
                     }
                 }
                 catch (TimeoutException)
                 {
-                    MessageBox.Show("No data received within the timeout period.","Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("No data received within the timeout period.","SerialCom", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     _continue = false;
                 }
             }
@@ -155,7 +150,7 @@ namespace SerialCom
 
                     portAvailable = true;
 
-                    MessageBox.Show("SerialCom started successfully","LoRa Config", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("SerialCom started successfully","SerialCom", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
                 }
                 catch (Exception)
@@ -166,8 +161,13 @@ namespace SerialCom
 
             if (!portAvailable)
             {
-                MessageBox.Show("Port is busy...\nUnable to connect after 5 attempts", "LoRa Config", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Port is busy...\nUnable to connect after 5 attempts", "SerialCom", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("LoRa not connected\nRestarting application", "SerialCom", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                RestartApplication();
             }
+
+
         }
 
         public void Stop() 
@@ -192,7 +192,6 @@ namespace SerialCom
 
             var dataParts = lastMessage.Split(';');
 
-            // Upewnij się, że mamy wystarczającą liczbę elementów, zanim próbujemy przypisać wartości
             telemetryData.LoRa.MsgLength = dataParts.Length > 0 ? ParseDoubleSafe(dataParts[0]) : 0.0;
             telemetryData.LoRa.RSSI = dataParts.Length > 1 ? ParseDoubleSafe(dataParts[1]) : 0.0;
             telemetryData.LoRa.SNR = dataParts.Length > 2 ? ParseDoubleSafe(dataParts[2]) : 0.0;
@@ -222,12 +221,10 @@ namespace SerialCom
             return telemetryData;
         }
 
-
         private double ParseDoubleSafe(string value)
         {
             return double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out double result) ? result : 0.0;
         }
-
 
         protected virtual void OnDataReceived()
         {
@@ -237,11 +234,11 @@ namespace SerialCom
             }
         }
 
-        public void ShowPortSelection()
+        private void ShowPortSelection()
         {
             Form portForm = new Form
             {
-                Text = "LoRa Config",
+                Text = "SeiralCom Config",
                 MaximizeBox = false,
                 MinimizeBox = false,
                 ClientSize = new Size(380, 150)
@@ -309,6 +306,26 @@ namespace SerialCom
             portForm.Controls.Add(connectButton);
 
             portForm.ShowDialog();
+        }
+
+        private void LoRaConfig()
+        {
+            Thread.Sleep(100);
+            _serialPort.WriteLine("at");
+            Thread.Sleep(100);
+            _serialPort.WriteLine("at+mode=test");
+            Thread.Sleep(100);
+            _serialPort.WriteLine("at+test=rfcfg");
+            Thread.Sleep(100);
+            _serialPort.WriteLine("at+test=rxlrpkt");
+            Thread.Sleep(100);
+        }
+
+        private void RestartApplication()
+        {
+            Application.DoEvents();
+            Application.Restart();
+            Environment.Exit(1);
         }
     }
 }
