@@ -595,7 +595,7 @@ namespace GNS
             label2.ForeColor = System.Drawing.Color.White; // Kolor czcionki na biały
             label2.BackColor = System.Drawing.Color.Transparent; // Przezroczyste tło
 
-            label3.Text = "GPS Altitude";
+            label3.Text = "Altitude";
             label3.Font = new Font("Aptos", 24, FontStyle.Bold);
             label3.Location = new Point(((panel7.Width - label3.Width) / 2), 10);
             label3.TextAlign = ContentAlignment.MiddleCenter;
@@ -1042,7 +1042,7 @@ namespace GNS
                         }
 
                      // Wnies poprawke na grawitacje ziemska przy horyzontalnym przyspieszeniu
-                    double VerAcc = -telemetryPacket.Baro.AccZInertial + CalcEarthAcc(telemetryPacket.Baro.Altitude);
+                    double VerAcc = Math.Round(-telemetryPacket.Baro.AccZInertial + CalcEarthAcc(telemetryPacket.Baro.Altitude));
 
                     // Wyslij punkt do wykresow
                     seriesCollection1[0].Values.Add(new ObservablePoint(_timestamp, telemetryPacket.Baro.VerticalVelocity));
