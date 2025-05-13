@@ -11,39 +11,20 @@ namespace SerialCom
 {
     public class LoRaSerialReader
     {
-        
         private SerialPort _serialPort;
         private string _portName;
         private int _baudRate;
         private bool _continue;
-        
-        // ReadMe
-        // 
-        // Tutaj znajduje się zmienna przechowująca otrzymane dane lotu.
-        // Na dole pliku znajdują się dwie funkcje pozwalające przetłumaczyć wiersz z tej listy na obiekt TelemetryData,
-        // który powinien być dla Was użyteczny.
-
-        // Żeby skorzystać z LoRaSerialReader po utworzeniu obiektu należy najpierw wywołać funkcję Init(), a następnie Run()
-        // (na potrzeby testów ustawione jest, że czyta ona 50 razy dane z portu).
-        //
-        // W konsoli powinny pokazać się zapytania o konfigurację - możecie je zostawić lub spróbować przenieść do okienka dialogowego dla użytkownika.
-        //
-        // Wątek który czyta dane z portu cały czas dodaje otrzymaną wiadomość na ostatnie miejsce na liście.
-        //
-        // Żeby zatrzymać działanie LoRaSerialReader należy wywołać funkcję Stop() a po niej Dispose() (oczywiście najpierw trzeba usunąć warunek if z funkcji Run()
-        // (while myślę, że może zostać puste i prawdziwe zgodnie z warunkiem który tam jest, zapobiega to zakończeniu wątku).
-        //
-
         private List<string> _receivedTelemetry;
         public List<string> ReceivedTelemetry { get => _receivedTelemetry; }
-
         private Thread serialThread;
-        
-        public delegate void DataReceivedEventHandler(object source, EventArgs e);
+        private bool _portConnected = false;
+        public bool IsPortConnected => _portConnected;
 
+        public delegate void DataReceivedEventHandler(object source, EventArgs e);
         public event DataReceivedEventHandler DataReceived;
 
-        public LoRaSerialReader() 
+        public LoRaSerialReader()
         {
             serialThread = new Thread(ReadPort);
             _serialPort = new SerialPort();
@@ -52,33 +33,40 @@ namespace SerialCom
             Init();
         }
 
-        public void Init() 
-        {       
-            _serialPort.PortName = _portName;
-            _serialPort.BaudRate = _baudRate;
+        public void Init()
+        {
+            if (!string.IsNullOrEmpty(_portName))
+            {
+                _serialPort.PortName = _portName;
+            }
+
+            // Set default baud rate if invalid
+            _serialPort.BaudRate = _baudRate > 0 ? _baudRate : 9600;
+
             _serialPort.ReadTimeout = 7000;
             _serialPort.WriteTimeout = 7000;
         }
 
-        public void Run() 
+        public void Run()
         {
             AttemptPortAccess();
 
             while (_continue)
             {
-                
+                Thread.Sleep(100);
             }
-            serialThread.Join();
-            _serialPort.Close();
+
+            if (_serialPort.IsOpen)
+            {
+                serialThread.Join();
+                _serialPort.Close();
+            }
             Dispose();
-            MessageBox.Show("SerialCom closed", "SerialCom", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            RestartApplication();
         }
 
         public void ReadPort()
         {
             Thread.Sleep(100);
-
             bool skipFirstRead = true;
             string currentData = "";
 
@@ -116,8 +104,20 @@ namespace SerialCom
                 }
                 catch (TimeoutException)
                 {
-                    MessageBox.Show("No data received within the timeout period.","SerialCom", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    _continue = false;
+                    if (_portConnected)
+                    {
+                        MessageBox.Show("No data received - check transmitter connection.\nContinuing in offline mode.",
+                                      "SerialCom Warning",
+                                      MessageBoxButtons.OK,
+                                      MessageBoxIcon.Warning);
+                        _portConnected = false;
+                    }
+                    Thread.Sleep(2000);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Read error: {ex.Message}");
+                    Thread.Sleep(1000);
                 }
             }
         }
@@ -140,43 +140,52 @@ namespace SerialCom
             bool portAvailable = false;
             int attempts = 5;
 
+            if (string.IsNullOrEmpty(_portName))
+            {
+                MessageBox.Show("Running in offline mode", "Info",
+                              MessageBoxButtons.OK, MessageBoxIcon.Information);
+                _portConnected = false;
+                _continue = false;
+                return;
+            }
+
             for (int i = 0; i < attempts; i++)
             {
                 try
                 {
                     _serialPort.Open();
                     _continue = true;
+                    _portConnected = true;
                     serialThread.Start();
-
                     portAvailable = true;
-
-                    MessageBox.Show("SerialCom started successfully","SerialCom", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("SerialCom started successfully", "SerialCom", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"Port access attempt {i + 1} failed: {ex.Message}");
                     Thread.Sleep(1000);
                 }
             }
 
             if (!portAvailable)
             {
-                MessageBox.Show("Port is busy...\nUnable to connect after 5 attempts", "SerialCom", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                MessageBox.Show("LoRa not connected\nRestarting application", "SerialCom", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                RestartApplication();
+                MessageBox.Show("Port is unavailable or busy.\nYou can still use the application without live data.",
+                              "SerialCom Warning",
+                              MessageBoxButtons.OK,
+                              MessageBoxIcon.Warning);
+                _portConnected = false;
+                _continue = false;
             }
-
-
         }
 
-        public void Stop() 
+        public void Stop()
         {
             _continue = false;
         }
 
         private void Dispose()
-        {            
+        {
             if (_serialPort != null) { _serialPort.Dispose(); }
         }
 
@@ -184,7 +193,11 @@ namespace SerialCom
         {
             if (!_receivedTelemetry.Any())
             {
-                throw new InvalidOperationException("No telemetry data available.");
+                return new TelemetryData
+                {
+                    IsValid = false,
+                    Status = "No data available - check connection or transmitter"
+                };
             }
 
             string lastMessage = _receivedTelemetry.Last();
@@ -218,6 +231,7 @@ namespace SerialCom
             telemetryData.GPS.Latitude = dataParts.Length > 20 ? ParseDoubleSafe(dataParts[20]) : 0.0;
             telemetryData.GPS.Longitude = dataParts.Length > 21 ? ParseDoubleSafe(dataParts[21]) : 0.0;
 
+            telemetryData.IsValid = true;
             return telemetryData;
         }
 
@@ -228,17 +242,14 @@ namespace SerialCom
 
         protected virtual void OnDataReceived()
         {
-            if (DataReceived != null)
-            {
-                DataReceived(this, EventArgs.Empty);
-            }
+            DataReceived?.Invoke(this, EventArgs.Empty);
         }
 
         private void ShowPortSelection()
         {
             Form portForm = new Form
             {
-                Text = "SeiralCom Config",
+                Text = "SerialCom Config",
                 MaximizeBox = false,
                 MinimizeBox = false,
                 ClientSize = new Size(380, 150)
@@ -260,7 +271,7 @@ namespace SerialCom
                 portComboBox.Enabled = false;
             }
             else
-            {               
+            {
                 portComboBox.Items.AddRange(availablePorts);
                 portComboBox.Enabled = true;
             }
@@ -299,11 +310,22 @@ namespace SerialCom
                 portForm.Close();
             };
 
+            Button cancelButton = new Button();
+            cancelButton.Text = "Continue Without Port";
+            cancelButton.Location = new Point(200, 80);
+            cancelButton.Click += (sender, e) =>
+            {
+                _portName = "";
+                _baudRate = 0;
+                portForm.Close();
+            };
+
             portForm.Controls.Add(portLabel);
             portForm.Controls.Add(portComboBox);
             portForm.Controls.Add(baudLabel);
             portForm.Controls.Add(baudComboBox);
             portForm.Controls.Add(connectButton);
+            portForm.Controls.Add(cancelButton);
 
             portForm.ShowDialog();
         }
@@ -319,13 +341,6 @@ namespace SerialCom
             Thread.Sleep(100);
             _serialPort.WriteLine("at+test=rxlrpkt");
             Thread.Sleep(100);
-        }
-
-        private void RestartApplication()
-        {
-            Application.DoEvents();
-            Application.Restart();
-            Environment.Exit(1);
         }
     }
 }

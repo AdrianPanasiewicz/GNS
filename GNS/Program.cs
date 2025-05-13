@@ -16,40 +16,58 @@ namespace GNS
         private static TelemetryProcessor processor;
         private static GNS formInstance;
 
-        [STAThread]
-        static void Main()
+
+    [STAThread]
+    static void Main()
         {
-            // Stworz klase odpowiedzialna za czytanie danych z SerialPort i zainicjalizuj ja
-            serialReader = new LoRaSerialReader();
-            //serialReader.ShowPortSelection();
-            //serialReader.Init();
+            Logger.Log("========== Application Starting ==========");
 
-            // Znajdz sciezke do przestrzeni roboczej
-            string workingDirectory = Environment.CurrentDirectory;
-            string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
-            string saveFilePath = projectDirectory + "\\GNS\\Data\\telemetry_data.csv";
+            try
+            {
+                Logger.Log("Initializing serialReader...");
+                serialReader = new LoRaSerialReader();
+                Logger.Log("Serial reader initialized.");
 
-            // Stworzenie procesora do obslugi pobieranych danych z USB
-            processor = new TelemetryProcessor(saveFilePath);
+                // Log working directory
+                Logger.Log($"Current directory: {Environment.CurrentDirectory}");
 
-            serialReader.DataReceived += Program.OnDataReceived;
+                // Log CSV file path
+                string workingDirectory = Environment.CurrentDirectory;
+                string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
+                string saveFilePath = Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "Data",
+                    "telemetry_data.csv");
+        
+                Logger.Log($"CSV save path: {saveFilePath}");
 
-            // Stworzenie watku do obslugi back-end
-            Thread BackEndThread = new Thread(() => BackEnd(processor, serialReader));
-            BackEndThread.IsBackground = true;
-            BackEndThread.Name = "Main thread";
+                // Initialize processor
+                Logger.Log("Creating TelemetryProcessor...");
+                processor = new TelemetryProcessor(saveFilePath);
+                Logger.Log("Processor created.");
 
+                // Thread initialization
+                Logger.Log("Starting GUI thread...");
+                Thread GUIThread = new Thread(GUI);
+                GUIThread.SetApartmentState(ApartmentState.STA);
+                GUIThread.Name = "GUI thread";
+                GUIThread.Start();
+                Logger.Log("GUI thread started.");
 
-            // Stworzenie watku do obslugi GUI
-            Thread GUIThread = new Thread(GUI);
-            GUIThread.SetApartmentState(ApartmentState.STA);
-            GUIThread.Name = "GUI thread";
-
-            // Uruchomienie obu watkow
-            GUIThread.Start();
-            Thread.Sleep(7000);
-            BackEndThread.Start();
-
+                Thread.Sleep(7000); // Consider logging why this delay exists
+                Logger.Log("Starting BackEnd thread...");
+                Thread BackEndThread = new Thread(() => BackEnd(processor, serialReader));
+                BackEndThread.IsBackground = true;
+                BackEndThread.Name = "Main thread";
+                BackEndThread.Start();
+                Logger.Log("BackEnd thread started.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException("Main()", ex);
+                MessageBox.Show($"Critical startup error: {ex.Message}");
+                Environment.Exit(1);
+            }
         }
 
 
@@ -64,10 +82,23 @@ namespace GNS
         /// <param name="serialReader"></param>
         public static void BackEnd(TelemetryProcessor processor, LoRaSerialReader serialReader)
         {
-            // Uruchom klase dp czytania danych z IUSB
-            serialReader.Run();
-            GNS formInstance = Application.OpenForms.OfType<GNS>().FirstOrDefault();
-
+            Logger.Log("BackEnd thread started.");
+            try
+            {
+                if (serialReader.IsPortConnected)
+                {
+                    Logger.Log("Starting serialReader.Run()...");
+                    serialReader.Run();
+                }
+                else
+                {
+                    Logger.Log("Serial port not connected. BackEnd thread exiting.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException("BackEnd", ex);
+            }
         }
 
         /// <summary>
@@ -77,12 +108,23 @@ namespace GNS
         /// </summary>
         public static void GUI()
         {
-            
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            formInstance = new GNS();
-            Application.Run(formInstance);
-            Environment.Exit(0);
+            Logger.Log("GUI thread started.");
+            try
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Logger.Log("Creating GNS form...");
+                formInstance = new GNS();
+                Logger.Log("Starting application loop...");
+                Application.Run(formInstance);
+                Logger.Log("Application loop exited.");
+                Environment.Exit(0);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException("GUI", ex);
+                MessageBox.Show($"GUI crash: {ex.Message}");
+            }
         }
         /// <summary>
         /// Wzywana metoda w przypadku pojawienia się wydarzenia DataReceived

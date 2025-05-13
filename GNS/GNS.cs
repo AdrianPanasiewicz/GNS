@@ -70,7 +70,9 @@ namespace GNS
 
         public GNS()
         {
+            Logger.Log("Initializing GNS form...");
             InitializeComponent();
+            Logger.Log("Components initialized.");
             this.DoubleBuffered = true;
             this.Size = new Size(1920, 1080);
             this.BackColor = System.Drawing.Color.FromArgb(255, 20, 33, 61);
@@ -86,11 +88,42 @@ namespace GNS
             host.Child = viewport;
 
             // Znajdz sciezke do przestrzeni roboczej
-            string workingDirectory = Environment.CurrentDirectory;
-            string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
-            this._RocketFilePath = projectDirectory + "\\GNS\\Resources\\RocketPhoto\\LIKWIDATOR_Assembly.obj";
+            string installedPath = Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                "RocketPhoto",
+                "LIKWIDATOR_Assembly.obj"
+            );
+
+            Logger.Log($"Rocket model path: {_RocketFilePath}");
+
+            if (File.Exists(installedPath))
+            {
+                this._RocketFilePath = installedPath;
+            }
+            else
+            {
+                // Fallback to development path (when running from IDE)
+                string devPath = Path.Combine(
+                    Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName,
+                    "GNS",
+                    "Resources",
+                    "RocketPhoto",
+                    "LIKWIDATOR_Assembly.obj"
+                );
+
+                if (File.Exists(devPath))
+                {
+                    this._RocketFilePath = devPath;
+                }
+                else
+                {
+                    throw new FileNotFoundException("Rocket model not found!");
+                }
+            }
 
             LoadRocketModel();
+            Logger.Log("Rocket model loaded.");
+
 
             // Create and define the axis lines
             var xAxis = new LinesVisual3D
@@ -288,37 +321,44 @@ namespace GNS
                     System.Drawing.Color.FromArgb(255, 70, 103, 195), 4, ButtonBorderStyle.Solid); // Dolna strona
             };
 
-            gMapControl = new GMapControl
+            try
             {
-                Size = new Size(612, 392),
-                Location = new Point(4, 4),
-                //Dock = DockStyle.Fill // Wypełni cały formularz
-            };
+                gMapControl = new GMapControl
+                {
+                    Size = new Size(612, 392),
+                    Location = new Point(4, 4),
+                    //Dock = DockStyle.Fill // Wypełni cały formularz
+                };
 
-            // Ustawienia GMapControl
-            gMapControl.MapProvider = GMapProviders.GoogleMap; // Możesz zmienić na inny dostawca
-            GMaps.Instance.Mode = AccessMode.ServerAndCache; // Używamy trybu serwerowego i pamięci podręcznej
-            gMapControl.Position = new PointLatLng(lat, lng); // Ustawienie pozycji (Warszawa)
-            gMapControl.MinZoom = 5;
-            gMapControl.MaxZoom = 100;
-            gMapControl.Zoom = 15;
+                // Ustawienia GMapControl
+                gMapControl.MapProvider = GMapProviders.GoogleMap; // Możesz zmienić na inny dostawca
+                GMaps.Instance.Mode = AccessMode.ServerAndCache; // Używamy trybu serwerowego i pamięci podręcznej
+                gMapControl.Position = new PointLatLng(lat, lng); // Ustawienie pozycji (Warszawa)
+                gMapControl.MinZoom = 5;
+                gMapControl.MaxZoom = 100;
+                gMapControl.Zoom = 15;
 
-            PointLatLng point = new PointLatLng(lat, lng);
+                PointLatLng point = new PointLatLng(lat, lng);
 
-            // Tworzymy znacznik (pineskę) na mapie
-            GMapMarker marker = new GMarkerGoogle(point, GMarkerGoogleType.blue_dot);
+                // Tworzymy znacznik (pineskę) na mapie
+                GMapMarker marker = new GMarkerGoogle(point, GMarkerGoogleType.blue_dot);
 
-            // Tworzymy nakładkę (overlay) na mapie, w której będą przechowywane wszystkie znaczniki
-            GMapOverlay markersOverlay = new GMapOverlay("markers");
+                // Tworzymy nakładkę (overlay) na mapie, w której będą przechowywane wszystkie znaczniki
+                GMapOverlay markersOverlay = new GMapOverlay("markers");
 
-            // Dodajemy znacznik do nakładki
-            markersOverlay.Markers.Add(marker);
+                // Dodajemy znacznik do nakładki
+                markersOverlay.Markers.Add(marker);
 
-            // Dodajemy nakładkę do kontrolki mapy
-            gMapControl.Overlays.Add(markersOverlay);
+                // Dodajemy nakładkę do kontrolki mapy
+                gMapControl.Overlays.Add(markersOverlay);
 
-            // Dodanie kontrolki do formularza
-            panel3.Controls.Add(gMapControl);
+                // Dodanie kontrolki do formularza
+                panel3.Controls.Add(gMapControl);
+            }
+            catch (TypeInitializationException ex)
+            {
+                Logger.Log($"Error: {ex.InnerException?.Message}");
+            }
 
             this.Controls.Add(panel3);
 

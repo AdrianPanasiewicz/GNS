@@ -6,6 +6,9 @@ namespace SerialCom
 {
     public class TelemetryData
     {
+        public bool IsValid { get; set; }
+        public string Status { get; set; }
+
         public LoRaData LoRa { get; set; }
         public TimeData Time { get; set; }
         public IMUData IMU { get; set; }

@@ -5,6 +5,8 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GNS", "GNS\GNS.csproj", "{3D7643E8-3026-4181-9AD1-6890794E2C9B}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ground_station", "ground_station\ground_station.vdproj", "{5CEDEACD-02EB-5370-994C-69751588ECB3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{3D7643E8-3026-4181-9AD1-6890794E2C9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D7643E8-3026-4181-9AD1-6890794E2C9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D7643E8-3026-4181-9AD1-6890794E2C9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CEDEACD-02EB-5370-994C-69751588ECB3}.Debug|Any CPU.ActiveCfg = Debug
+		{5CEDEACD-02EB-5370-994C-69751588ECB3}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
